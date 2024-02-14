@@ -5,7 +5,7 @@
 [![Repository Size](https://img.shields.io/github/repo-size/marta-seq/PENGUIN.svg)](https://github.com/marta-seq/PENGUIN)
 [![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 [![Suggestions Welcome](https://img.shields.io/badge/Suggestions-Welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Release](https://img.shields.io/github/v/release/marta-seq/PENGUIN.svg)](https://github.com/marta-seq/PENGUIN/releases/tag/v1.0)
+[![Release](https://img.shields.io/github/v/release/marta-seq/PENGUIN.svg)](https://github.com/marta-seq/PENGUIN/releases/)
 
 # PENGUIN
 ============
