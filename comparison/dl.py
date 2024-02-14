@@ -4,6 +4,7 @@ import copy
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 tf.autograph.set_verbosity(1)
 tf.get_logger().setLevel('ERROR')
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -33,13 +34,9 @@ np.random.seed(SEED)
 # A previously trained model is loaded by creating a new N2V-object without providing a 'config'.
 from n2v.internals.N2V_DataGenerator import N2V_DataGenerator
 
+# follow tutorial by:
 # https://github.com/bnsreenu/python_for_microscopists/blob/master/293_denoising_RGB_images_using_deep%20learning.ipynb
 # https://github.com/juglab/n2v/blob/main/examples/2D/denoising2D_SEM/01_training.ipynb
-
-# class N2V:
-#     def __init__(self):
-#         self.model = None
-#
 
 # per channel
 def noise2void(img_list:list, patch_size:int = 64, train_epochs:int = 100,
@@ -97,11 +94,9 @@ def noise2void(img_list:list, patch_size:int = 64, train_epochs:int = 100,
                            train_steps_per_epoch=int(X.shape[0]/128),
                            train_epochs=train_epochs,
                            train_loss='mse', batch_norm=True,
-                           train_batch_size=train_batch_size,
-                           n2v_perc_pix=0.198,
+                           train_batch_size=train_batch_size, n2v_perc_pix=0.198,
                            n2v_patch_shape=patch_shape,
-                           n2v_manipulator='uniform_withCP',
-                           n2v_neighborhood_radius=5)
+                           n2v_manipulator='uniform_withCP', n2v_neighborhood_radius=5)
 
         # Let's look at the parameters stored in the config-object.
         vars(config)
@@ -127,7 +122,7 @@ def noise2void(img_list:list, patch_size:int = 64, train_epochs:int = 100,
         # with strategy.scope():
         # a name used to identify the model
         basedir = 'modelsN2V'
-        model = N2V(config, model_name, basedir=basedir)
+        model = N2V(config)
 
 
         # We are ready to start training now. # todo put X_val

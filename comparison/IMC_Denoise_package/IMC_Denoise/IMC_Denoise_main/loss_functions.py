@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-from keras import backend as K
+from tensorflow.keras import backend as K
 
 def HF_regularization(Img_in):
     sum_axis = [1,2,3]

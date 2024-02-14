@@ -345,116 +345,6 @@ def bm3d_filter(img: np.array, sigma_psd: float = 0.2) -> np.array:
 
 
 
-# hybrid median filter
-
-def x_shaped_kernel(size):
-    # kernel = [[0] * size for _ in range(size)]
-    # kernel = np.zeros((size, size,1))
-    kernel = np.zeros((size, size))  # withfor loop
-
-    for i in range(size):
-        kernel[i][i] = 1
-        kernel[i][size - 1 - i] = 1
-    return kernel
-
-
-def plus_shaped_kernel(size):
-    # kernel = [[False] * size for _ in range(size)]
-    # kernel = np.zeros((size, size,1))
-    kernel = np.zeros((size, size))  # withfor loop
-
-    for i in range(size):
-        kernel[size // 2][i] = True
-        kernel[i][size // 2] = True
-    return kernel
-
-
-def center_pixel_kernel(size):
-    # kernel = [[False] * size for _ in range(size)]
-    # kernel = np.zeros((size, size,1))
-    kernel = np.zeros((size, size))  # withfor loop
-
-    kernel[size // 2][size // 2] = True
-    return kernel
-
-def hybrid_median_filter(img: np.array, window_size: int = 3, percentile: int = 50, transf_bool=True) -> np.array:
-    # https://github.com/shurtado/NoiseSuppress/blob/master/imenh_lib.py
-    # didnot follow this github. did my own implementation
-    from scipy.ndimage import percentile_filter
-
-    if transf_bool:
-        img_to_apply = np.where(img > 0, 1, 0)
-    else:
-        img_to_apply = copy.deepcopy(img)
-
-    kernel_cross = x_shaped_kernel(window_size)
-    kernel_plus = plus_shaped_kernel(window_size)
-    kernel_center = center_pixel_kernel(window_size)
-
-    median_stack = np.empty(img_to_apply.shape)
-    for ch in range(img.shape[2]):
-        # get median of kernel_cross and + shape
-        img_med = img_to_apply[:, :, ch]
-        median_cross = percentile_filter(img_med, percentile=percentile, footprint=kernel_cross)
-        median_plus = percentile_filter(img_med, percentile=percentile, footprint=kernel_plus)
-        median_pixel = percentile_filter(img_med, percentile=percentile, footprint=kernel_center)
-
-        img_stack = np.dstack((median_cross, median_plus, median_pixel))
-
-        hybrid_median = np.percentile(img_stack, q=percentile, axis=-1)
-        median_stack[:, :, ch] = hybrid_median
-
-    if transf_bool:
-        bl = median_stack.astype(bool)  # False is Zero
-        median_stack = np.where(bl == False, 0, img)
-    return median_stack
-
-#to delete below
-
-
-def filter_hot_pixelsBodenmiller(img: np.ndarray, thres: float) -> np.ndarray:
-    '''
-
-    :param img:
-    :param thres:
-    :return:
-    # https://github.com/BodenmillerGroup/ImcSegmentationPipeline/blob/56ce18cfa570770eba169c7a3fb02ac492cc6d4b/src/imcsegpipe/utils.py#L10
-
-    '''
-    from scipy.ndimage import maximum_filter
-    kernel = np.ones((1, 3, 3), dtype=bool)
-    kernel[0, 1, 1] = False
-    # array([[[ True,  True,  True],
-    #         [ True, False,  True],
-    #         [ True,  True,  True]]])
-    max_neighbor_img = maximum_filter(img, footprint=kernel, mode="mirror")
-    return np.where(img - max_neighbor_img > thres, max_neighbor_img, img)
-
-
-def modified_hot_pixelsBodenmiller(img: np.ndarray, thres: float, window_size: int = 3) -> np.ndarray:
-    """
-
-    :param img:
-    :param thres:
-    :param window_size:
-    :return:
-    """
-    # changed for channels last and accept window
-    # https://bodenmillergroup.github.io/steinbock/latest/cli/preprocessing/
-    # https://github.com/BodenmillerGroup/ImcSegmentationPipeline/blob/56ce18cfa570770eba169c7a3fb02ac492cc6d4b/src/imcsegpipe/utils.py#L10
-    from scipy.ndimage import maximum_filter
-    kernel = np.ones((window_size, window_size, 1), dtype=bool)
-    line = window_size // 2
-    kernel[line, line, 0] = False  # cneter pixel
-    max_neighbor_img = maximum_filter(img, footprint=kernel, mode="mirror")
-    return np.where(img - max_neighbor_img > thres, max_neighbor_img, 0)  # img
-
-
-
-
-
-
-
 
 
 
@@ -622,97 +512,68 @@ def percentile_filter_changedpercentiles(img: np.array, window_size: int = 3, pe
     return percentile_blur
 
 
+def x_shaped_kernel(size):
+    # kernel = [[0] * size for _ in range(size)]
+    # kernel = np.zeros((size, size,1))
+    kernel = np.zeros((size, size))  # withfor loop
+
+    for i in range(size):
+        kernel[i][i] = 1
+        kernel[i][size - 1 - i] = 1
+    return kernel
 
 
-# # todo check
-# def mean_filter(img: np.array, window_size:int = 3)-> np.array:
-#     from skimage.filters.rank import mean
-#     # https://scikit-image.org/docs/stable/auto_examples/filters/plot_rank_mean.html#sphx-glr-auto-examples-filters-plot-rank-mean-py
-#     kernel = np.ones((window_size, window_size, 1))
-#     normal_result = mean(img, footprint=kernel)
-#     return normal_result
-#
-# # def hybrid_median_image_HMM(img: np.array, max_kernel_size: int = 7 )-> np.array:
-# #     import HMM
-# # #image: Corresponds to the noise image.
-# # # max_kernel_size: The maximun dimension of the kernel, this number must be odd.
-# # # figures: Allow to show the original/noise image (named as image) and the denoising image after applied the hybrid median-mean approach; Figures has two options: True for displaying both images or False for not displaying.
-# # # plots: Allow to select a square region to measure/quantify the speckle contrast and plot the speckle contrast vs number of iterations; Plots has two options True or False.
-# # # save_image: Allow to save the final denoising image after applying the hybrid median-mean method; Save_image has two options True or False.
-# # # https://oirl.github.io/Speckle-Hybrid-median-mean/
-# # # https://www.spiedigitallibrary.org/journals/optical-engineering/volume-60/issue-12/123107/Speckle-noise-reduction-in-coherent-imaging-systems-via-hybrid-medianmean/10.1117/1.OE.60.12.123107.full?SSO=1
-# #     img_HMM = HMM.HybridMedianMean(img, max_kernel_size=max_kernel_size, figures='False', plots ='False', save_image='False')
-# #     return img_HMM
-# # not appply on multidimensional images may change butnot worth it maybe?
-#
-#
-#
-# I think Cv2 does not have
-# def adaptive_median_filter(img:np.ndarray, max_size: int = 7, transf_bool = True)-> np.ndarray:
-#     import cv2
-#     if transf_bool:
-#         img_to_apply = np.where(img > 0, 1, 0)
-#     else:
-#         img_to_apply = copy.deepcopy(img)
-#
-#     median_stack = np.empty(img_to_apply.shape)
-#     for ch in range(img.shape[2]):
-#         img_med = img_to_apply[:,:,ch]
-#         adaptive_median = cv2.adaptiveMedianBlur(img_med, max_size)
-#         median_stack[:,:,ch] = adaptive_median
-#
-#     if transf_bool:
-#         bl = median_stack.astype(bool) # False is Zero
-#         median_stack = np.where(bl == False, 0, img)
-#
-#     return median_stack
+def plus_shaped_kernel(size):
+    # kernel = [[False] * size for _ in range(size)]
+    # kernel = np.zeros((size, size,1))
+    kernel = np.zeros((size, size))  # withfor loop
+
+    for i in range(size):
+        kernel[size // 2][i] = True
+        kernel[i][size // 2] = True
+    return kernel
 
 
-# def adaptive_median_filter_multi_channel_CHATGPT(image:np.ndarray, window_size:int=3)-> np.ndarray:
-#     # from scipy.signal import medfilt2d
-#
-#     # written in CHATGPT
-#     # the function calculates the median for each channel separately and also the median difference
-#     # for each channel separately. It also checks whether the difference between the current pixel and
-#     # the median is greater than the median difference for all channels, if so, it replaces the current pixel with the median.
-#     # As before, you should experiment with different window sizes to see what works best for your specific image
-#     # and level of noise.
-#
-#     # Create a copy of the image to avoid modifying the original
-#     filtered_image = np.copy(image)
-#
-#     # Define the size of the window to use for median filtering
-#     if window_size % 2 == 0:
-#         raise ValueError("Window size must be odd")
-#
-#     # Define the size of the padding for the image
-#     padding = (window_size - 1) // 2
-#
-#     # Pad the image with a mirrored version of itself
-#     padded_image = np.pad(image, ((padding, padding), (padding, padding), (0, 0)), mode="reflect")
-#
-#     # Iterate over each pixel in the image
-#     for i in range(padding, padded_image.shape[0] - padding):
-#         for j in range(padding, padded_image.shape[1] - padding):
-#             # Get the window of pixels around the current pixel
-#             window = padded_image[i - padding:i + padding + 1, j - padding:j + padding + 1,:]
-#
-#             # Calculate the median of the pixels in the window for each channel
-#             median = [np.median(window[:,:,c]) for c in range(window.shape[-1])]
-#
-#             # Calculate the absolute difference of each pixel in the window from the median for each channel
-#             abs_diff = np.abs(window - median)
-#
-#             # Calculate the median of the absolute differences for each channel
-#             median_diff = [np.median(abs_diff[:,:,c]) for c in range(abs_diff.shape[-1])]
-#
-#             # If the difference between the current pixel and the median is greater than the median difference, set the pixel to the median
-#             if np.all(np.abs(padded_image[i,j]-median) > median_diff):
-#                 filtered_image[i - padding, j - padding,:] = median
-#
-#     return filtered_image
-#
+def center_pixel_kernel(size):
+    # kernel = [[False] * size for _ in range(size)]
+    # kernel = np.zeros((size, size,1))
+    kernel = np.zeros((size, size))  # withfor loop
 
+    kernel[size // 2][size // 2] = True
+    return kernel
+
+
+def hybrid_median_filter(img: np.array, window_size: int = 3, percentile: int = 50, transf_bool=True) -> np.array:
+    # https://github.com/shurtado/NoiseSuppress/blob/master/imenh_lib.py
+    # didnot follow this github. did my own implementation
+    from scipy.ndimage import percentile_filter
+
+    if transf_bool:
+        img_to_apply = np.where(img > 0, 1, 0)
+    else:
+        img_to_apply = copy.deepcopy(img)
+
+    kernel_cross = x_shaped_kernel(window_size)
+    kernel_plus = plus_shaped_kernel(window_size)
+    kernel_center = center_pixel_kernel(window_size)
+
+    median_stack = np.empty(img_to_apply.shape)
+    for ch in range(img.shape[2]):
+        # get median of kernel_cross and + shape
+        img_med = img_to_apply[:, :, ch]
+        median_cross = percentile_filter(img_med, percentile=percentile, footprint=kernel_cross)
+        median_plus = percentile_filter(img_med, percentile=percentile, footprint=kernel_plus)
+        median_pixel = percentile_filter(img_med, percentile=percentile, footprint=kernel_center)
+
+        img_stack = np.dstack((median_cross, median_plus, median_pixel))
+
+        hybrid_median = np.percentile(img_stack, q=percentile, axis=-1)
+        median_stack[:, :, ch] = hybrid_median
+
+    if transf_bool:
+        bl = median_stack.astype(bool)  # False is Zero
+        median_stack = np.where(bl == False, 0, img)
+    return median_stack
 
 def morphological_filter(image: np.ndarray, structuring_element_size: int = 3) -> np.ndarray:
     """
@@ -751,18 +612,43 @@ def morphological_filter(image: np.ndarray, structuring_element_size: int = 3) -
     return filtered_image
 
 
+def filter_hot_pixelsBodenmiller(img: np.ndarray, thres: float) -> np.ndarray:
+    '''
 
-# todo mixed pipelines
+    :param img:
+    :param thres:
+    :return:
+    # https://github.com/BodenmillerGroup/ImcSegmentationPipeline/blob/56ce18cfa570770eba169c7a3fb02ac492cc6d4b/src/imcsegpipe/utils.py#L10
+
+    '''
+    from scipy.ndimage import maximum_filter
+    kernel = np.ones((1, 3, 3), dtype=bool)
+    kernel[0, 1, 1] = False
+    # array([[[ True,  True,  True],
+    #         [ True, False,  True],
+    #         [ True,  True,  True]]])
+    max_neighbor_img = maximum_filter(img, footprint=kernel, mode="mirror")
+    return np.where(img - max_neighbor_img > thres, max_neighbor_img, img)
 
 
-# todo make function that applys differeent thresholds for specific channels
-#  in percentile filters
+def modified_hot_pixelsBodenmiller(img: np.ndarray, thres: float, window_size: int = 3) -> np.ndarray:
+    """
 
-# todo metrics for analysis of noise
-#
-# from skimage.metrics import peak_signal_noise_ratio
-# noise_psnr = peak_signal_noise_ratio(ref_img, noisy_img)
-# https://github.com/bnsreenu/python_for_microscopists/blob/master/094_denoising_MRI.py
+    :param img:
+    :param thres:
+    :param window_size:
+    :return:
+    """
+    # changed for channels last and accept window
+    # https://bodenmillergroup.github.io/steinbock/latest/cli/preprocessing/
+    # https://github.com/BodenmillerGroup/ImcSegmentationPipeline/blob/56ce18cfa570770eba169c7a3fb02ac492cc6d4b/src/imcsegpipe/utils.py#L10
+    from scipy.ndimage import maximum_filter
+    kernel = np.ones((window_size, window_size, 1), dtype=bool)
+    line = window_size // 2
+    kernel[line, line, 0] = False  # cneter pixel
+    max_neighbor_img = maximum_filter(img, footprint=kernel, mode="mirror")
+    return np.where(img - max_neighbor_img > thres, max_neighbor_img, 0)  # img
+
 
 def save_images(img: np.array, name: str, ch_last: bool = True) -> np.array:
     import tifffile

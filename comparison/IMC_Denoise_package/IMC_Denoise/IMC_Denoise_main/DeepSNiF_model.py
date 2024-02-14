@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from keras.layers import Activation, UpSampling2D, Convolution2D, MaxPooling2D, BatchNormalization, Dropout, concatenate, add
+from tensorflow.keras.layers import Activation, UpSampling2D, Convolution2D, MaxPooling2D, BatchNormalization, Dropout, concatenate, add
 
 def conv_bn_relu_gen(nb_filter, rk, ck, st, names, trainable_label = True):
     def f(input):
