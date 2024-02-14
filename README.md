@@ -10,9 +10,19 @@
 # PENGUIN
 ============
 
-*PENGUIN* is a platform for the 
+*PENGUIN* - Percentile Normalization GUI Image deNoising is a 
+rapid and efficient image preprocessing pipeline for multiplexed spatial proteomics.
+In comparison to existing approaches, PENGUIN stands out by eliminating the need 
+for manual annotation or machine learning model training. 
+It effectively preserves signal intensity differences and reduces noise.
 
-This repository contains the files for running PENGUIN and 
+PENGUIN's simplicity, speed,
+and user-friendly interface, deployed both as script and as a Jupyter
+notebook, facilitate parameter testing and image processing.
+
+This repository contains the files for running PENGUIN and the comparison
+with standard image processing methods and solutions designed 
+specifically for multiplex imaging data. 
 
 
 General view: 
@@ -57,7 +67,9 @@ launch the jupyter and be sure that you are running with the penguin kernel
 ## Getting started
 
 There are 2 Notebooks available. 
+
 Use check_th_all_ch_per_image if each FOV is a stack of channels.
+
 Use check_th_one_ch_per_image if each FOV is a directory with multiple tiffs inside ( one per each channel)
 
 Open the notebook and click Kernel -> Restart and Run all 
