@@ -1,5 +1,3 @@
-"# Penguin 0.1"
-
 [//]: # ([![License]&#40;https://img.shields.io/badge/license-MIT-blue.svg&#41;]&#40;LICENSE&#41;)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Repository Size](https://img.shields.io/github/repo-size/marta-seq/PENGUIN.svg)](https://github.com/marta-seq/PENGUIN)
@@ -8,7 +6,6 @@
 [![Release](https://img.shields.io/github/v/release/marta-seq/PENGUIN.svg)](https://github.com/marta-seq/PENGUIN/releases/)
 
 # PENGUIN
-============
 
 *PENGUIN* - Percentile Normalization GUI Image deNoising is a 
 rapid and efficient image preprocessing pipeline for multiplexed spatial proteomics.
@@ -26,7 +23,7 @@ specifically for multiplex imaging data.
 
 
 General view: 
-![plot](figs/penguin_construction.png)
+![plot](figs/main_figure.png)
 image made with image2go
 
 ## Table of Contents
