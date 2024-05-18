@@ -30,6 +30,9 @@ def preprocess_images(files, up_limit = 99, down_limit = 1):
     # PARSE images to get numpy arrays into shape (, ,n_channels)
     images = map(IP.parse_image, files)
     images = list(images)
+    for i, img in enumerate(images):
+        if len(img.shape) == 2:  # Check if the shape is 2D
+            images[i] = np.expand_dims(img, axis=-1)
     # PERCENTILE SATURATION OUTLIERS
     imgsOut = map(lambda p: IPrep.remove_outliers(p, up_limit, down_limit), images)
     # NORMALIZE PER CHANNEL with function from OpenCV
@@ -204,21 +207,7 @@ def plot_psnr(imgs_channel,norm_imgs_channel, imgs_filtered):
     plt.plot(psnr)
 
 
-def calculus_fun(files_channel, PERCENTILE, TH, sample_images,sample_images_number):
-    # defining the sample images. It will only run on the number of images
-    if sample_images == 'random':
-        randomlist = random.sample(range(0, len(files_channel)),sample_images_number)
-        files_channel = [files_channel[i] for i in randomlist]
-
-    elif sample_images == 'top':
-        files_channel = files_channel[:sample_images_number]
-
-    elif sample_images == 'bottom':
-        files_channel = files_channel[-sample_images_number:]
-    else: # all
-        files_channel = files_channel
-
-
+def calculus_fun(files_channel, PERCENTILE, TH):
     images_original, imgs_norm = preprocess_images(files_channel)
     imgs_channel = [images_original[i] for i in range(len(images_original))]
     norm_imgs_channel = [imgs_norm[i] for i in range(len(imgs_norm))]
