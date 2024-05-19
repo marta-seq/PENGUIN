@@ -2,7 +2,7 @@ from apeer_ometiff_library import io
 # import tensorflow as tf
 import numpy as np
 from src.file_specs import FileSpecifics
-
+from tifffile import tifffile
 # class ImageParser():
 
 # def parse_image(img_path: str) -> dict:
@@ -23,12 +23,13 @@ def parse_image(img_path: str) -> np.array:
     """
     try:
         (img_apeer, omexml) = io.read_ometiff(img_path)
-        if img_path.__contains__('MB'):#  (1, 50, 1, 1, 494, 464) instead of   (1, 1, 52, 586, 617)
-            img = img_apeer[0, :, 0, 0, :, :]
-        else:
-            img = img_apeer[0, 0, :, :, :]
+        # if img_path.__contains__('MB'):#  (1, 50, 1, 1, 494, 464) instead of   (1, 1, 52, 586, 617)
+        #     img = img_apeer[0, :, 0, 0, :, :]
+        # else:
+        #     img = img_apeer[0, 0, :, :, :]
+        img = np.squeeze(img_apeer)
         img = np.moveaxis(img, 0, -1)
-        # print(img.shape)
+
             # return {'image': img, 'img_meta': omexml, 'filename': img_path}
         return img
     except Exception as e:
@@ -36,7 +37,7 @@ def parse_image(img_path: str) -> np.array:
         print(e)
         return None
 
-from tifffile import tifffile
+
 def parse_image_pages(img_path):
     """
     For tiff files with ages and not fullstack
@@ -154,16 +155,14 @@ def remove_outliers(img: np.array, up_limit=99, down_limit=1) -> np.array:
     # and all the values below 1st percentile and above 99th percentile are set o zero right?
     imOutlier = img
     #     per channel
+    print(img.shape)
     for i in range(img.shape[2]):
-        print(i)
         ch = img[:, :, i]  # imOutlier[:, :, i]= np.log(img[:, :, i]+0.5).round(4)
         p_99 = np.percentile(ch, up_limit)  # return 50th percentile, e.g median.
-        print(p_99)
         p_01 = np.percentile(ch, down_limit)  # return 50th percentile, e.g median.
-        print(p_01)
         # np.where Where True, yield x, otherwise yield y
-
-        ch = np.where(ch > p_99, p_99, ch) # instead of substitube by 0
+        if p_99 > 0:
+            ch = np.where(ch > p_99, p_99, ch) # instead of substitube by 0
         ch = np.where(ch < p_01, 0, ch)
         imOutlier[:, :, i] = ch
 

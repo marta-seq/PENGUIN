@@ -779,6 +779,6 @@ def save_img_ch_names_pages(img: np.array, name:str, ch_last:bool = True, channe
     with tifffile.TiffWriter(name, bigtiff=True) as tiff:
         for i, page in enumerate(img_save):
             tiff.save(page,description=channel_names[i],
-                      extratags = [(285,2,None,channel_names[i], False)]) #, metadata=tags #  description=channel_names[i],
+                      extratags = [(285,'s',None,channel_names[i], False)]) #, metadata=tags #  description=channel_names[i],
     return img_save
-
+#[(285,2,None,channel_names[i], False)])
