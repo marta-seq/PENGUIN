@@ -44,8 +44,6 @@ git clone https://github.com/your_username/your_repository.git
 
 ## Requirements
 
-## Create conda environment
-
 You can create the environment installing the packages or using the ymal file. 
 
 To manually create and install packages use: 
