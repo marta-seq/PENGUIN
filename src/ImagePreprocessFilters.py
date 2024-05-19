@@ -4,20 +4,38 @@ import skimage
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage as nd
+import tifffile
 
-# todo equal from ImageParser  can work even if one channel
+
 def remove_outliers(img: np.array, up_limit=99, down_limit=1) -> np.array:
-    # To facilitate pixel annotation, the images are sharpened.
-    # More specifically, outliers are removed through saturation of all pixels with
-    # values lower than the 1st and higher than the 99th percentile.
-    # Means that per each image and per each channel you find the values of the 1st and 99th percentile
-    # and all the values below 1st percentile and above 99th percentile are set o zero right?
+
+    """
+    To facilitate pixel annotation, the images are sharpened.
+    More specifically, outliers are removed through saturation of all pixels with
+    values lower than the down limit (default 1) and higher than the up limite (default 99th) percentile.
+    The saturation is done per channel
+
+    Parameters
+    ----------
+    img : np array of the image
+    up limit: int . From 0 to 100. Value of the up limit to be saturated.
+    All the pixel values above this percentile on image are set to this value.
+    Default 99
+    down_limit :   From 0 to 100. Value of the down limit to be saturated.
+    All the pixel values below this percentile on image are set to this value.
+    Default 1
+
+    Returns
+    -------
+    numpy array with image saturated.
+
+    """
+
     imOutlier = img
     for i in range(img.shape[2]):
-        ch = img[:, :, i]  # imOutlier[:, :, i]= np.log(img[:, :, i]+0.5).round(4)
-        p_99 = np.percentile(ch, up_limit)  # return 50th percentile, e.g median.
-        p_01 = np.percentile(ch, down_limit)  # return 50th percentile, e.g median.
-        # np.where Where True, yield x, otherwise yield y
+        ch = img[:, :, i]
+        p_99 = np.percentile(ch, up_limit)
+        p_01 = np.percentile(ch, down_limit)
         if p_99 > 0:
             ch = np.where(ch > p_99, p_99, ch) # instead of substitube by 0
         ch = np.where(ch < p_01, p_01, ch)
@@ -31,7 +49,15 @@ def remove_outliers(img: np.array, up_limit=99, down_limit=1) -> np.array:
     return imOutlier
 
 def normalize_channel_cv2_minmax(img: np.array) -> np.array:
-    # https://www.pythonpool.com/cv2-normalize/
+    """
+    Normalizes each channel of the image with the min/max open cv function.
+
+    Parameters
+    ----------
+    img : np array of the image
+
+    Returns: image min max normalized per channel
+    """
     normalized = np.zeros(img.shape)
     for ch in range(img.shape[2]):
         out_img = img[:, :, ch]
@@ -40,57 +66,44 @@ def normalize_channel_cv2_minmax(img: np.array) -> np.array:
         normalized[:, :, ch] = normalized_ch
     return normalized
 
-
-
-def out_ratio(img, th=0.9):
-    if out_ratio:
-        # get the binary. and deletes al the faded
-        new_img = np.where(img >= th, 1, 0)
-        return new_img
-
-
-def thresholding(img, th=0.1):
-    new_img = np.where(img >= th, img, 0)
-    return new_img
-
-
-
 def out_ratio2(img, th=0.1):
+    """
+    Thresholding function. It sets all the pixels below threshold to 0.
+    Image should be one channel if thesholding is to be applied per channel.
+    Parameters
+    ----------
+    img : np array  to be thresholded
+    th: threshold value
+    Returns: array thresholded. All pixels below th are set to 0
+    """
     new_img = np.where(img >= th, img, 0)
     return new_img
 
 
-
-
-
-
-
-
-###########################################################################
-##### Filters
 
 def percentile_filter(img: np.array, window_size:int = 3, percentile:int=50, transf_bool = True, out_ratio = False )-> np.array:
     '''
-    :param img:
-    :param window_size:
-    :param percentile:
-    :param transf_bool:
-    :return:
+    Percentile filter
+    :param img: numpy array
+    :param window_size: window of the kernel size. default 3. Will build a kernel 3*3
+    :param percentile: percentile value to be applied to the array inside window
+    :param transf_bool: will transform the image to bool. apply the filter and map back the values
+    This means it will not change directly the image. will identify the noise and set those to zero
+    This prevents unnacessary blur. Default is True
+
+    :return: image filtered with percentile
     '''
     from scipy.ndimage import percentile_filter
     kernel = np.ones((window_size, window_size, 1))
-    # todo check if disk is better
+    # if disk instead square is better
     # from skimage.morphology import disk
     # kernel = disk(window_size) # disk(3) will create a window 5 *5 plus points on edges
     if transf_bool:
-        # will transform to bool. apply the filter and map back the values
-        # wi not change any value from the image. will so identify the noise and set those to zero
-        # transform to bool (if it has values or not)
+
         img_to_apply = np.where(img > 0, 1, 0)
 
     else:
-        # will apply the filter directly to the image
-        # the positive values from the image will be different
+        # will apply the filter directly to the image the positive values from the image will be different
         img_to_apply = copy.deepcopy(img)
 
     nzero = np.count_nonzero(img_to_apply)
@@ -104,95 +117,216 @@ def percentile_filter(img: np.array, window_size:int = 3, percentile:int=50, tra
     if transf_bool:
         bl = percentile_blur.astype(bool) # False is Zero
         percentile_blur = np.where(bl == False, 0, img)
-        # or
-        # data[~bl] = 0
 
-    # get the number of pixel changed. Can be that they are not zeros. or pixels changed that become non zero
-    pixel_changed = nzero - nzero_filter
-    total_pixel = img.shape[0] * img.shape[1] * img.shape[2]
-    percentage_changed = np.round(pixel_changed/total_pixel*100,3)
-    # print('total number of pixel changed: {} of {} \n'
-    #       'percentage of pixels changed: {}'.format(pixel_changed, total_pixel,percentage_changed))
 
-    return percentile_blur
-
-def percentile_filter_changedpercentiles(img: np.array, window_size:int = 3, percentiles:list=[], transf_bool = True )-> np.array:
-    '''
-
-    :param img:
-    :param window_size:
-    :param percentiles:
-    :param transf_bool:
-    :return:
-    Percentile different from channel
-
-    '''
-    from scipy.ndimage import percentile_filter
-    kernel = np.ones((window_size, window_size))
-    # todo check if disk is better
-    # from skimage.morphology import disk
-    # kernel = disk(window_size) # disk(3) will create a window 5 *5 plus points on edges
-
-    # make sure that the percentiles input is a list of n channel elements
-    if len(percentiles)!= img.shape[-1]:
-        raise ValueError(f"Percentiles must have the same number of elements as "
-                         f"the number of channels in the image, "
-                         f"expected {img.shape[-1]} but got {len(percentiles)}")
-    if transf_bool:
-        img_to_apply = np.where(img > 0, 1, 0)
-    else:
-        img_to_apply = copy.deepcopy(img)
-
-    nzero = np.count_nonzero(img_to_apply)
-
-    percentile_blur = np.empty(img.shape)
-    for ch in range(img_to_apply.shape[2]):
-        img_ch = img_to_apply[:,:,ch]
-        med = percentile_filter(img_ch,
-                                        percentile=percentiles[ch],
-                                        footprint=kernel)
-        percentile_blur[:,:,ch] = med
-
-    nzero_filter = np.count_nonzero(percentile_blur)
-
-    if transf_bool:
-        bl = percentile_blur.astype(bool) # False is Zero
-        percentile_blur = np.where(bl == False, 0, img)
-        # or
-        # data[~bl] = 0
-    # print(np.unique(percentile_blur))
     # # get the number of pixel changed. Can be that they are not zeros. or pixels changed that become non zero
     # pixel_changed = nzero - nzero_filter
     # total_pixel = img.shape[0] * img.shape[1] * img.shape[2]
     # percentage_changed = np.round(pixel_changed/total_pixel*100,3)
-    # print('total number of pixel changed: {} of {} \n'
-    #       'percentage of pixels changed: {}'.format(pixel_changed, total_pixel,percentage_changed))
+    # # print('total number of pixel changed: {} of {} \n'
+    # #       'percentage of pixels changed: {}'.format(pixel_changed, total_pixel,percentage_changed))
 
     return percentile_blur
+#
+# def percentile_filter_changedpercentiles(img: np.array, window_size:int = 3, percentiles:list=[], transf_bool = True )-> np.array:
+#     '''
+#
+#     :param img:
+#     :param window_size:
+#     :param percentiles:
+#     :param transf_bool:
+#     :return:
+#     Percentile different from channel
+#
+#     '''
+#     from scipy.ndimage import percentile_filter
+#     kernel = np.ones((window_size, window_size))
+#     # todo check if disk is better
+#     # from skimage.morphology import disk
+#     # kernel = disk(window_size) # disk(3) will create a window 5 *5 plus points on edges
+#
+#     # make sure that the percentiles input is a list of n channel elements
+#     if len(percentiles)!= img.shape[-1]:
+#         raise ValueError(f"Percentiles must have the same number of elements as "
+#                          f"the number of channels in the image, "
+#                          f"expected {img.shape[-1]} but got {len(percentiles)}")
+#     if transf_bool:
+#         img_to_apply = np.where(img > 0, 1, 0)
+#     else:
+#         img_to_apply = copy.deepcopy(img)
+#
+#     nzero = np.count_nonzero(img_to_apply)
+#
+#     percentile_blur = np.empty(img.shape)
+#     for ch in range(img_to_apply.shape[2]):
+#         img_ch = img_to_apply[:,:,ch]
+#         med = percentile_filter(img_ch,
+#                                         percentile=percentiles[ch],
+#                                         footprint=kernel)
+#         percentile_blur[:,:,ch] = med
+#
+#     nzero_filter = np.count_nonzero(percentile_blur)
+#
+#     if transf_bool:
+#         bl = percentile_blur.astype(bool) # False is Zero
+#         percentile_blur = np.where(bl == False, 0, img)
+#         # or
+#         # data[~bl] = 0
+#     # print(np.unique(percentile_blur))
+#     # # get the number of pixel changed. Can be that they are not zeros. or pixels changed that become non zero
+#     # pixel_changed = nzero - nzero_filter
+#     # total_pixel = img.shape[0] * img.shape[1] * img.shape[2]
+#     # percentage_changed = np.round(pixel_changed/total_pixel*100,3)
+#     # print('total number of pixel changed: {} of {} \n'
+#     #       'percentage of pixels changed: {}'.format(pixel_changed, total_pixel,percentage_changed))
+#
+#     return percentile_blur
 
 
-def out_ratio_changedth(img: np.array, th:list=[])-> np.array:
-    '''
+def save_images(img: np.array, name:str, ch_last:bool = True)-> np.array:
+    """
+    Simple Save numpy array to tiffile
 
-    :param img:
-    :param window_size:
-    :param percentiles:
-    :param transf_bool:
-    :return:
-    Percentile different from channel
+    Parameters
+    img: numpy array
+    name: path to save img
+    ch_last: if the channels are the last axis of numpy. Default True
 
-    '''
+    Returns: image numpy array
+    """
+    img_save = np.float32(img)
+    if ch_last == True: # channel is the last axis
+        img_save = np.moveaxis(img_save, -1, 0)
 
-    th_img = np.empty(img.shape)
-    for ch in range(img.shape[2]):
-        img_ch = img[:,:,ch]
-        new_img = np.where(img_ch >= th, img, 0)
-        th_img[:,:,ch] = new_img
-    return th_img
+    tifffile.imwrite(name, img_save,photometric="minisblack")
+    return img
+
+def save_images_ch_names(img: np.array, name:str, ch_last:bool = True, channel_names:list=None)-> np.array:
+    """
+    Save numpy array to tiffile with channel names as metadata
+
+    Parameters
+    img: numpy array
+    name: path to save img
+    channel_names: list with channel name
+    ch_last: if the channels are the last axis of numpy. Default True
+
+    Returns: image numpy array
+    """
+    img_save = np.float32(img)
+    if ch_last == True: # channel is the last axis
+        img_save = np.moveaxis(img_save, -1, 0)
+
+    tifffile.imwrite(name, img_save,photometric="minisblack", metadata={'Channel': {'Name': channel_names}})
+    return img
+
+def save_img_ch_names_pages(img: np.array, name:str, ch_last:bool = True, channel_names:list=None)-> np.array:
+    """
+    Save numpy array to tiffile with channel names in the tags of tiff file pages
+
+    Parameters
+    img: numpy array
+    name: path to save img
+    channel_names: list with channel name
+    ch_last: if the channels are the last axis of numpy. Default True
+
+    Returns: image numpy array
+    """
+    img_save = np.float32(img)
+    if ch_last == True: # channel is the last axis
+        img_save = np.moveaxis(img_save, -1, 0) # put the channel on first axis
+
+    with tifffile.TiffWriter(name, bigtiff=True) as tiff:
+        for i, page in enumerate(img_save):
+            tiff.save(page,description=channel_names[i],
+                      extratags = [(285,'s',None,channel_names[i], False)]) #, metadata=tags #  description=channel_names[i],
+    return img_save
 
 
 
 
+# def out_ratio_changedth(img: np.array, th:list=[])-> np.array:
+#     '''
+#
+#     :param img:
+#     :param window_size:
+#     :param percentiles:
+#     :param transf_bool:
+#     :return:
+#     Percentile different from channel
+#
+#     '''
+#
+#     th_img = np.empty(img.shape)
+#     for ch in range(img.shape[2]):
+#         img_ch = img[:,:,ch]
+#         new_img = np.where(img_ch >= th, img, 0)
+#         th_img[:,:,ch] = new_img
+#     return th_img
+#
+#
+#
+##########################################################################
+#####Other thresholds
+import skimage
+def th_otsu(img):
+    """
+    Otsu thresholding
+    """
+    th = skimage.filters.threshold_otsu(img)
+    new_img = np.where(img > th, img, 0)
+    return new_img
+
+def th_isodata(img):
+    """
+    Isodata thresholding
+    """
+    th = skimage.filters.threshold_isodata(img)
+    new_img = np.where(img > th, img, 0)
+    return new_img
+
+def th_li(img):
+    """
+    Li thresholding
+    """
+    th = skimage.filters.threshold_li(img)
+    new_img = np.where(img > th, img, 0)
+    return new_img
+
+def th_yen(img):
+    """
+    Yen thresholding
+    """
+    th = skimage.filters.threshold_yen(img)
+    new_img = np.where(img > th, img, 0)
+    return new_img
+
+def th_triangle(img):
+    """
+    triangle thresholding
+    """
+    th = skimage.filters.threshold_triangle(img)
+    new_img = np.where(img > th, img, 0)
+    return new_img
+
+def th_mean(img):
+    """
+    mean thresholding
+    """
+    th = skimage.filters.threshold_mean(img)
+    new_img = np.where(img > th, img, 0)
+    return new_img
+
+def th_local(img, block_size=3, method='gaussian'):
+    """
+    local thresholding
+    """
+    th = skimage.filters.threshold_local(img, block_size=block_size, method=method)
+    new_img = np.where(img > th, img, 0)
+    return new_img
+
+###########################################################################
+##### Other Filters
 
 
 def x_shaped_kernel(size):
@@ -224,8 +358,10 @@ def center_pixel_kernel(size):
     return kernel
 
 def hybrid_median_filter(img: np.array, window_size:int = 3, percentile:int=50, transf_bool = True )-> np.array:
-    # https://github.com/shurtado/NoiseSuppress/blob/master/imenh_lib.py
-    # didnot follow this github. did my own implementation
+    """
+    Function for hybrid median filter
+    """
+
     from scipy.ndimage import percentile_filter
 
     if transf_bool:
@@ -255,140 +391,14 @@ def hybrid_median_filter(img: np.array, window_size:int = 3, percentile:int=50, 
         median_stack = np.where(bl == False, 0, img)
     return median_stack
 
-# # todo check
-# def mean_filter(img: np.array, window_size:int = 3)-> np.array:
-#     from skimage.filters.rank import mean
-#     # https://scikit-image.org/docs/stable/auto_examples/filters/plot_rank_mean.html#sphx-glr-auto-examples-filters-plot-rank-mean-py
-#     kernel = np.ones((window_size, window_size, 1))
-#     normal_result = mean(img, footprint=kernel)
-#     return normal_result
-#
-# # def hybrid_median_image_HMM(img: np.array, max_kernel_size: int = 7 )-> np.array:
-# #     import HMM
-# # #image: Corresponds to the noise image.
-# # # max_kernel_size: The maximun dimension of the kernel, this number must be odd.
-# # # figures: Allow to show the original/noise image (named as image) and the denoising image after applied the hybrid median-mean approach; Figures has two options: True for displaying both images or False for not displaying.
-# # # plots: Allow to select a square region to measure/quantify the speckle contrast and plot the speckle contrast vs number of iterations; Plots has two options True or False.
-# # # save_image: Allow to save the final denoising image after applying the hybrid median-mean method; Save_image has two options True or False.
-# # # https://oirl.github.io/Speckle-Hybrid-median-mean/
-# # # https://www.spiedigitallibrary.org/journals/optical-engineering/volume-60/issue-12/123107/Speckle-noise-reduction-in-coherent-imaging-systems-via-hybrid-medianmean/10.1117/1.OE.60.12.123107.full?SSO=1
-# #     img_HMM = HMM.HybridMedianMean(img, max_kernel_size=max_kernel_size, figures='False', plots ='False', save_image='False')
-# #     return img_HMM
-# # not appply on multidimensional images may change butnot worth it maybe?
-#
-#
-#
-# I think Cv2 does not have
-# def adaptive_median_filter(img:np.ndarray, max_size: int = 7, transf_bool = True)-> np.ndarray:
-#     import cv2
-#     if transf_bool:
-#         img_to_apply = np.where(img > 0, 1, 0)
-#     else:
-#         img_to_apply = copy.deepcopy(img)
-#
-#     median_stack = np.empty(img_to_apply.shape)
-#     for ch in range(img.shape[2]):
-#         img_med = img_to_apply[:,:,ch]
-#         adaptive_median = cv2.adaptiveMedianBlur(img_med, max_size)
-#         median_stack[:,:,ch] = adaptive_median
-#
-#     if transf_bool:
-#         bl = median_stack.astype(bool) # False is Zero
-#         median_stack = np.where(bl == False, 0, img)
-#
-#     return median_stack
-
-
-
-# def adaptive_median_filter_multi_channel_CHATGPT(image:np.ndarray, window_size:int=3)-> np.ndarray:
-#     # from scipy.signal import medfilt2d
-#
-#     # written in CHATGPT
-#     # the function calculates the median for each channel separately and also the median difference
-#     # for each channel separately. It also checks whether the difference between the current pixel and
-#     # the median is greater than the median difference for all channels, if so, it replaces the current pixel with the median.
-#     # As before, you should experiment with different window sizes to see what works best for your specific image
-#     # and level of noise.
-#
-#     # Create a copy of the image to avoid modifying the original
-#     filtered_image = np.copy(image)
-#
-#     # Define the size of the window to use for median filtering
-#     if window_size % 2 == 0:
-#         raise ValueError("Window size must be odd")
-#
-#     # Define the size of the padding for the image
-#     padding = (window_size - 1) // 2
-#
-#     # Pad the image with a mirrored version of itself
-#     padded_image = np.pad(image, ((padding, padding), (padding, padding), (0, 0)), mode="reflect")
-#
-#     # Iterate over each pixel in the image
-#     for i in range(padding, padded_image.shape[0] - padding):
-#         for j in range(padding, padded_image.shape[1] - padding):
-#             # Get the window of pixels around the current pixel
-#             window = padded_image[i - padding:i + padding + 1, j - padding:j + padding + 1,:]
-#
-#             # Calculate the median of the pixels in the window for each channel
-#             median = [np.median(window[:,:,c]) for c in range(window.shape[-1])]
-#
-#             # Calculate the absolute difference of each pixel in the window from the median for each channel
-#             abs_diff = np.abs(window - median)
-#
-#             # Calculate the median of the absolute differences for each channel
-#             median_diff = [np.median(abs_diff[:,:,c]) for c in range(abs_diff.shape[-1])]
-#
-#             # If the difference between the current pixel and the median is greater than the median difference, set the pixel to the median
-#             if np.all(np.abs(padded_image[i,j]-median) > median_diff):
-#                 filtered_image[i - padding, j - padding,:] = median
-#
-#     return filtered_image
-#
-
-
-def morphological_filter(image:np.ndarray, structuring_element_size:int=3)-> np.ndarray:
-    """
-
-    :param image:
-    :param structuring_element_size:
-    :return:
-
-    This function uses morphological closing and opening to remove salt and pepper noise from an image.
-    The structuring element is a matrix (default is 3x3) that defines the neighborhood of each pixel
-    that is considered during the morphological operations. The structuring element is used as a filter
-     to determine whether a pixel should be considered for erosion and dilation.
-    Morphological closing is a dilation followed by erosion operation, it is used to fill the small white or black
-    regions(noise) in the image.
-    Morphological opening is an erosion followed by dilation operation, it is used to remove small white or black
-    regions(noise) in the image.
-    You should experiment with different structuring element sizes to see what works best for your specific image
-     and level of noise.
-    """
-
-    # write in ChatGPT
-
-    # Create a copy of the image to avoid modifying the original
-    filtered_image = np.copy(image)
-
-    # Define the structuring element to use for morphological operations
-    structuring_element = cv2.getStructuringElement(cv2.MORPH_RECT, (structuring_element_size, structuring_element_size))
-
-    # Perform morphological closing to fill in small white or black regions
-    filtered_image = cv2.morphologyEx(filtered_image, cv2.MORPH_CLOSE, structuring_element)
-
-    # Perform morphological opening to remove small white or black regions
-    filtered_image = cv2.morphologyEx(filtered_image, cv2.MORPH_OPEN, structuring_element)
-
-    return filtered_image
-
-
 def filter_hot_pixelsBodenmiller(img: np.ndarray, thres: float) -> np.ndarray:
     '''
+    function that implements hot pixel removal from Steinbock
+    https://github.com/BodenmillerGroup/ImcSegmentationPipeline/blob/56ce18cfa570770eba169c7a3fb02ac492cc6d4b/src/imcsegpipe/utils.py#L10
 
     :param img:
     :param thres:
     :return:
-    # https://github.com/BodenmillerGroup/ImcSegmentationPipeline/blob/56ce18cfa570770eba169c7a3fb02ac492cc6d4b/src/imcsegpipe/utils.py#L10
 
     '''
     from scipy.ndimage import maximum_filter
@@ -402,15 +412,18 @@ def filter_hot_pixelsBodenmiller(img: np.ndarray, thres: float) -> np.ndarray:
 
 def modified_hot_pixelsBodenmiller(img: np.ndarray, thres: float, window_size:int = 3) -> np.ndarray:
     """
+    function that implements and slightly modified hot pixel removal from Steinbock
+    https://github.com/BodenmillerGroup/ImcSegmentationPipeline/blob/56ce18cfa570770eba169c7a3fb02ac492cc6d4b/src/imcsegpipe/utils.py#L10
+    # changed for channels last and accept window
+    # https://bodenmillergroup.github.io/steinbock/latest/cli/preprocessing/
+    # https://github.com/BodenmillerGroup/ImcSegmentationPipeline/blob/56ce18cfa570770eba169c7a3fb02ac492cc6d4b/src/imcsegpipe/utils.py#L10
+
 
     :param img:
     :param thres:
     :param window_size:
     :return:
     """
-    # changed for channels last and accept window
-    # https://bodenmillergroup.github.io/steinbock/latest/cli/preprocessing/
-    # https://github.com/BodenmillerGroup/ImcSegmentationPipeline/blob/56ce18cfa570770eba169c7a3fb02ac492cc6d4b/src/imcsegpipe/utils.py#L10
     from scipy.ndimage import maximum_filter
     kernel = np.ones((window_size, window_size,1), dtype=bool)
     line = window_size//2
@@ -422,7 +435,7 @@ def modified_hot_pixelsBodenmiller(img: np.ndarray, thres: float, window_size:in
 
 def gaussian_filter(img: np.array, sigma = 0.2)-> np.array:
     """
-
+    Gaussian filter
     :param img:
     :param sigma:
     :return:
@@ -443,7 +456,7 @@ def gaussian_filter(img: np.array, sigma = 0.2)-> np.array:
 def non_local_means_filter(img: np.ndarray, patch_size:int = 5, patch_distance: int = 11,
                            sigma:float = 0.2) -> np.ndarray:
     """
-
+    Non local means filter
     :param img:
     :param patch_size:
     :param patch_distance:
@@ -482,7 +495,7 @@ def non_local_means_filter(img: np.ndarray, patch_size:int = 5, patch_distance: 
 
 def bilateral_filter(img: np.array, **params)-> np.array:
     """
-
+    Bilateral filter
     :param img:
     :param sigma:
     :return:
@@ -499,7 +512,7 @@ def bilateral_filter(img: np.array, **params)-> np.array:
 
 def total_variation_filter(img: np.array, weight:float = 0.3,**params)-> np.array:
     """
-
+    Total variation filter
     :param img:
     :param weight:
     :param params:
@@ -513,7 +526,7 @@ def total_variation_filter(img: np.array, weight:float = 0.3,**params)-> np.arra
 
 def wavelet_filter(img: np.array)-> np.array:
     """
-
+    Wavelet filtering
     :param img:
     :return:
     """
@@ -711,7 +724,7 @@ def anisotropic_filtering(img: np.array, niter:int = 1, kappa: int = 50,
 
 def bm3d_filter(img: np.array, sigma_psd:float = 0.2)-> np.array:
     """
-
+    Bm3d filter
     :param img:
     :param sigma_psd:
     :return:
@@ -739,46 +752,3 @@ def bm3d_filter(img: np.array, sigma_psd:float = 0.2)-> np.array:
 
 
 
-
-# todo mixed pipelines
-
-
-# todo make function that applys differeent thresholds for specific channels
-#  in percentile filters
-
-# todo metrics for analysis of noise
-#
-# from skimage.metrics import peak_signal_noise_ratio
-# noise_psnr = peak_signal_noise_ratio(ref_img, noisy_img)
-# https://github.com/bnsreenu/python_for_microscopists/blob/master/094_denoising_MRI.py
-
-def save_images(img: np.array, name:str, ch_last:bool = True)-> np.array:
-    import tifffile
-    img_save = np.float32(img)
-    if ch_last == True: # channel is the last axis
-        img_save = np.moveaxis(img_save, -1, 0)
-
-    tifffile.imwrite(name, img_save,photometric="minisblack")
-    return img
-
-def save_images_ch_names(img: np.array, name:str, ch_last:bool = True, channel_names:list=None)-> np.array:
-    import tifffile
-    img_save = np.float32(img)
-    if ch_last == True: # channel is the last axis
-        img_save = np.moveaxis(img_save, -1, 0)
-
-    tifffile.imwrite(name, img_save,photometric="minisblack", metadata={'Channel': {'Name': channel_names}})
-    return img
-
-def save_img_ch_names_pages(img: np.array, name:str, ch_last:bool = True, channel_names:list=None)-> np.array:
-    import tifffile
-    img_save = np.float32(img)
-    if ch_last == True: # channel is the last axis
-        img_save = np.moveaxis(img_save, -1, 0) # put the channel on first axis
-
-    with tifffile.TiffWriter(name, bigtiff=True) as tiff:
-        for i, page in enumerate(img_save):
-            tiff.save(page,description=channel_names[i],
-                      extratags = [(285,'s',None,channel_names[i], False)]) #, metadata=tags #  description=channel_names[i],
-    return img_save
-#[(285,2,None,channel_names[i], False)])
