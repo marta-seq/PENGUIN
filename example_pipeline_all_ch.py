@@ -73,6 +73,14 @@ if __name__ == "__main__":
 
     # Save images
     names_save = [os.path.join(path_for_results, os.path.basename(sub)) for sub in files]
-    images_final = map(lambda p, f: IPrep.save_images(p, f, ch_last=True), imgs_filtered, names_save)
-    print(f'Images saved at {path_for_results}')
+    if isinstance(self.channel_names[0], str):
+        images_final = map(
+            lambda p, f: IPrep.save_img_ch_names_pages(p, f, ch_last=True, channel_names=self.channel_names),
+            imgs_filtered, names_save)
+
+    else:
+        # will not save channel names
+        images_final = map(lambda p, f: IPrep.save_images(p, f, ch_last=True), imgs_filtered, names_save)
+
+    print(f'Images saved at {self.path_for_results}')
 
