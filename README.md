@@ -42,7 +42,7 @@ To clone this repository to your local machine, use the following command:
 git clone https://github.com/your_username/your_repository.git
 ~~~~~~~~~~~~~
 
-## Requirements
+## Requirements/Installation
 
 You can create the environment installing the packages or using the ymal file. 
 
@@ -66,8 +66,7 @@ pip install apeer-ometiff-library --no-deps
 After you created the environment, and if you want to use the Jupyter notebooks
 
 add the environment kernel to jupyter 
-~~~~~~~~~~~~~
-~~~~~~~~~~~~~
+
 ```bash
 python -m ipykernel install --user --name=penguin
 ```
