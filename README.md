@@ -24,11 +24,11 @@ specifically for multiplex imaging data.
 
 General view: 
 ![plot](figs/main_figure.png)
-image made with image2go
+
 
 ## Table of Contents
 - [Clone the Repository](#clone-the-repository)
-- [Requirements](#requirements)
+- [Requirements/Installation](#requirements)
 - [Getting started](#getting-started)
 - [Credits](#credits)
 - [License](#license)
@@ -46,19 +46,33 @@ git clone https://github.com/your_username/your_repository.git
 
 ## Create conda environment
 
-Download the package and create environment or check requirements
+You can create the environment installing the packages or using the ymal file. 
 
-if trouble with appeear-ome ti... and imagecodecs install no deps 
+To manually create and install packages use: 
+
+```bash
+conda create --name penguin
+conda activate penguin
+conda install matplotlib pandas panel numpy opencv scikit-image ipywidgets jupyter ipykernel plotly
+pip install apeer-ometiff-library --no-deps
+```
+
+Alternatively, you can create the environemtn using the yml file:
+
+```bash
+conda env create --file penguin_env.yml
+conda activate penguin
+pip install apeer-ometiff-library --no-deps
+```
 
 After you created the environment, and if you want to use the Jupyter notebooks
 
-activate penguin environment and add the environment kernel to jupyter 
+add the environment kernel to jupyter 
 ~~~~~~~~~~~~~
 ~~~~~~~~~~~~~
 ```bash
 python -m ipykernel install --user --name=penguin
 ```
-
 launch the jupyter and be sure that you are running with the penguin kernel
 
 ## Getting started
