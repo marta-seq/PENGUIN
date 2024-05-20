@@ -9,10 +9,8 @@ import tifffile
 
 
 def remove_outliers(img: np.array, up_limit=99, down_limit=1) -> np.array:
-
     """
     Remove outliers in an image by saturating pixel values.
-
     This function sharpens images to facilitate pixel annotation by removing outliers.
     It saturates all pixels with values lower than the down limit (default 1st percentile)
     and higher than the up limit (default 99th percentile). The saturation is performed per channel.
@@ -43,7 +41,6 @@ def remove_outliers(img: np.array, up_limit=99, down_limit=1) -> np.array:
     -----
     The function modifies the image in-place and saturates pixel values based on the specified
     percentile limits per channel.
-
     """
 
     imOutlier = img
@@ -135,7 +132,7 @@ def out_ratio2(img: np.ndarray, th: float = 0.1) -> np.ndarray:
 
 def percentile_filter(img: np.ndarray, window_size: int = 3, percentile: int = 50,
                       transf_bool: bool = True, out_ratio: bool = False) -> np.ndarray:
-    '''
+    """
     Apply a percentile filter ( Scipy implementation) to the image.
 
     Parameters
@@ -151,6 +148,7 @@ def percentile_filter(img: np.ndarray, window_size: int = 3, percentile: int = 5
         The percentile filter is only applied to determine which pixels are noise and only those are set to 0.
         This prevents unnecessary blur by identifying noise and setting those values to zero.
         Default is True.
+
     Returns
     -------
     np.ndarray
@@ -163,7 +161,7 @@ def percentile_filter(img: np.ndarray, window_size: int = 3, percentile: int = 5
     - If `transf_bool` is True, the image is transformed to boolean values (0 or 1) before filtering,
       preventing unnecessary blur by identifying noise and setting those values to zero.
     - If `transf_bool` is False, the filter is applied directly to the image.
-    '''
+    """
 
     kernel = np.ones((window_size, window_size, 1))
     # if disk instead square is better

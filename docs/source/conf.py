@@ -16,8 +16,14 @@ import pathlib
 import sys
 import os
 sys.path.insert(0, pathlib.Path(__file__).parents[2].resolve().as_posix())
-sys.path.insert(0,os.path.abspath('D:/PycharmProjects/phd/Preprocess_IMC/src/'))
-sys.path.insert(0,os.path.abspath('D:/PycharmProjects/phd/Preprocess_IMC/figs'))
+current_dir = os.path.dirname(__file__)
+
+# Add paths relative to the current directory
+src_path = os.path.abspath(os.path.join(current_dir, '../../src'))
+figs_path = os.path.abspath(os.path.join(current_dir, '../../figs'))
+
+sys.path.insert(0, src_path)
+sys.path.insert(0, figs_path)
 
 # -- Project information -----------------------------------------------------
 

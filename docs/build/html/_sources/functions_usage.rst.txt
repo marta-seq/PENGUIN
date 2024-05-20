@@ -69,5 +69,3 @@ To save as multipage tiffs with page names as metadata:
 And to save the channel names as page names use:
 
 .. autofunction:: ImagePreprocessFilters.save_img_ch_names_pages
-
-
