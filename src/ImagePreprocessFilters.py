@@ -1,33 +1,48 @@
 import copy
-import cv2
+# import cv2
 import skimage
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage as nd
+from scipy.ndimage import percentile_filter
 import tifffile
 
 
 def remove_outliers(img: np.array, up_limit=99, down_limit=1) -> np.array:
 
     """
-    To facilitate pixel annotation, the images are sharpened.
-    More specifically, outliers are removed through saturation of all pixels with
-    values lower than the down limit (default 1) and higher than the up limite (default 99th) percentile.
-    The saturation is done per channel
+    Remove outliers in an image by saturating pixel values.
+
+    This function sharpens images to facilitate pixel annotation by removing outliers.
+    It saturates all pixels with values lower than the down limit (default 1st percentile)
+    and higher than the up limit (default 99th percentile). The saturation is performed per channel.
 
     Parameters
     ----------
-    img : np array of the image
-    up limit: int . From 0 to 100. Value of the up limit to be saturated.
-    All the pixel values above this percentile on image are set to this value.
-    Default 99
-    down_limit :   From 0 to 100. Value of the down limit to be saturated.
-    All the pixel values below this percentile on image are set to this value.
-    Default 1
+    img : np.ndarray
+        The input image as a NumPy array.
+    up_limit : int, optional
+        The upper limit percentile for saturation. All pixel values above this percentile
+        are set to this value. Default is 99.
+    down_limit : int, optional
+        The lower limit percentile for saturation. All pixel values below this percentile
+        are set to this value. Default is 1.
 
     Returns
     -------
-    numpy array with image saturated.
+    np.ndarray
+        The image with outliers removed through saturation.
+
+    Examples
+    --------
+    >>> img = np.random.rand(100, 100, 3) * 255
+    >>> img_saturated = remove_outliers(img, up_limit=99, down_limit=1)
+    >>> print(img_saturated.shape)
+
+    Notes
+    -----
+    The function modifies the image in-place and saturates pixel values based on the specified
+    percentile limits per channel.
 
     """
 
@@ -41,23 +56,39 @@ def remove_outliers(img: np.array, up_limit=99, down_limit=1) -> np.array:
         ch = np.where(ch < p_01, p_01, ch)
         imOutlier[:, :, i] = ch
 
-    # n_pixels_changed = np.sum(imOutlier != img)
-    # n_pixels_changed = sum(map(lambda x, y: bool(x - y), imOutlier, img))
-    # print('set {} pixels to zero (above {} and below {} percentile threshold per channel out of {}'.
-    #       format(n_pixels_changed, up_limit,down_limit, img.shape[0]*img.shape[1]*img.shape[2]))
-    # print((n_pixels_changed/(img.shape[0]*img.shape[1]*img.shape[2]))*100, 'pixels changed in saturation')
     return imOutlier
 
 def normalize_channel_cv2_minmax(img: np.array) -> np.array:
     """
-    Normalizes each channel of the image with the min/max open cv function.
+    Normalize each channel of the image using the OpenCV min-max normalization function.
+
+    This function processes each channel of the input image independently,
+    normalizing pixel values to the range [0, 1] using OpenCV's `cv2.normalize` method.
 
     Parameters
     ----------
-    img : np array of the image
+    img : np.ndarray
+        The input image as a NumPy array with shape (H, W, C), where H is the height,
+        W is the width, and C is the number of channels.
 
-    Returns: image min max normalized per channel
+    Returns
+    -------
+    np.ndarray
+        The image with each channel min-max normalized to the range [0, 1].
+
+    Examples
+    --------
+    >>> img = np.random.rand(100, 100, 3) * 255
+    >>> normalized_img = normalize_channel_cv2_minmax(img)
+    >>> print(normalized_img.shape)
+    >>> print(normalized_img.min(), normalized_img.max())
+
+    Notes
+    -----
+    This normalization ensures that the minimum value of each channel is 0 and
+    the maximum value is 1.
     """
+
     normalized = np.zeros(img.shape)
     for ch in range(img.shape[2]):
         out_img = img[:, :, ch]
@@ -66,34 +97,74 @@ def normalize_channel_cv2_minmax(img: np.array) -> np.array:
         normalized[:, :, ch] = normalized_ch
     return normalized
 
-def out_ratio2(img, th=0.1):
+def out_ratio2(img: np.ndarray, th: float = 0.1) -> np.ndarray:
     """
-    Thresholding function. It sets all the pixels below threshold to 0.
-    Image should be one channel if thesholding is to be applied per channel.
+    Apply thresholding to an image.
+
+    This function sets all pixels below the specified threshold to 0.
+    The input image should be a single-channel image if thresholding is to be applied per channel.
+
     Parameters
     ----------
-    img : np array  to be thresholded
-    th: threshold value
-    Returns: array thresholded. All pixels below th are set to 0
+    img : np.ndarray
+        The input image as a NumPy array.
+    th : float, optional
+        The threshold value. All pixel values below this threshold will be set to 0.
+        Default is 0.1.
+
+    Returns
+    -------
+    np.ndarray
+        The thresholded image, with all pixels below the threshold set to 0.
+
+    Examples
+    --------
+    >>> img = np.random.rand(100, 100)
+    >>> thresholded_img = out_ratio2(img, th=0.2)
+    >>> print(thresholded_img.min(), thresholded_img.max())
+
+    Notes
+    -----
+    The function performs element-wise thresholding, so it is suitable for both 2D and 3D arrays.
+
     """
     new_img = np.where(img >= th, img, 0)
     return new_img
 
 
 
-def percentile_filter(img: np.array, window_size:int = 3, percentile:int=50, transf_bool = True, out_ratio = False )-> np.array:
+def percentile_filter(img: np.ndarray, window_size: int = 3, percentile: int = 50,
+                      transf_bool: bool = True, out_ratio: bool = False) -> np.ndarray:
     '''
-    Percentile filter
-    :param img: numpy array
-    :param window_size: window of the kernel size. default 3. Will build a kernel 3*3
-    :param percentile: percentile value to be applied to the array inside window
-    :param transf_bool: will transform the image to bool. apply the filter and map back the values
-    This means it will not change directly the image. will identify the noise and set those to zero
-    This prevents unnacessary blur. Default is True
+    Apply a percentile filter ( Scipy implementation) to the image.
 
-    :return: image filtered with percentile
+    Parameters
+    ----------
+    img : np.ndarray
+        The input image as a NumPy array. If different values per channel this should be only the specific channel.
+    window_size : int, optional
+        The size of the kernel window. Default is 3, creating a 3x3 kernel.
+    percentile : int, optional
+        The percentile value to be applied to the array inside the window.
+    transf_bool : bool, optional
+        If True, the function will transform the image to boolean values (0 or 1) before applying the filter.
+        The percentile filter is only applied to determine which pixels are noise and only those are set to 0.
+        This prevents unnecessary blur by identifying noise and setting those values to zero.
+        Default is True.
+    Returns
+    -------
+    np.ndarray
+        The image filtered with the percentile method.
+
+    Notes
+    -----
+    - The function applies a percentile filter to the input image.
+    - The kernel used for filtering is a square window of size (window_size, window_size).
+    - If `transf_bool` is True, the image is transformed to boolean values (0 or 1) before filtering,
+      preventing unnecessary blur by identifying noise and setting those values to zero.
+    - If `transf_bool` is False, the filter is applied directly to the image.
     '''
-    from scipy.ndimage import percentile_filter
+
     kernel = np.ones((window_size, window_size, 1))
     # if disk instead square is better
     # from skimage.morphology import disk
@@ -113,86 +184,40 @@ def percentile_filter(img: np.array, window_size:int = 3, percentile:int=50, tra
                                         footprint=kernel)
     nzero_filter = np.count_nonzero(percentile_blur)
 
-
     if transf_bool:
         bl = percentile_blur.astype(bool) # False is Zero
         percentile_blur = np.where(bl == False, 0, img)
 
-
-    # # get the number of pixel changed. Can be that they are not zeros. or pixels changed that become non zero
-    # pixel_changed = nzero - nzero_filter
-    # total_pixel = img.shape[0] * img.shape[1] * img.shape[2]
-    # percentage_changed = np.round(pixel_changed/total_pixel*100,3)
-    # # print('total number of pixel changed: {} of {} \n'
-    # #       'percentage of pixels changed: {}'.format(pixel_changed, total_pixel,percentage_changed))
-
     return percentile_blur
-#
-# def percentile_filter_changedpercentiles(img: np.array, window_size:int = 3, percentiles:list=[], transf_bool = True )-> np.array:
-#     '''
-#
-#     :param img:
-#     :param window_size:
-#     :param percentiles:
-#     :param transf_bool:
-#     :return:
-#     Percentile different from channel
-#
-#     '''
-#     from scipy.ndimage import percentile_filter
-#     kernel = np.ones((window_size, window_size))
-#     # todo check if disk is better
-#     # from skimage.morphology import disk
-#     # kernel = disk(window_size) # disk(3) will create a window 5 *5 plus points on edges
-#
-#     # make sure that the percentiles input is a list of n channel elements
-#     if len(percentiles)!= img.shape[-1]:
-#         raise ValueError(f"Percentiles must have the same number of elements as "
-#                          f"the number of channels in the image, "
-#                          f"expected {img.shape[-1]} but got {len(percentiles)}")
-#     if transf_bool:
-#         img_to_apply = np.where(img > 0, 1, 0)
-#     else:
-#         img_to_apply = copy.deepcopy(img)
-#
-#     nzero = np.count_nonzero(img_to_apply)
-#
-#     percentile_blur = np.empty(img.shape)
-#     for ch in range(img_to_apply.shape[2]):
-#         img_ch = img_to_apply[:,:,ch]
-#         med = percentile_filter(img_ch,
-#                                         percentile=percentiles[ch],
-#                                         footprint=kernel)
-#         percentile_blur[:,:,ch] = med
-#
-#     nzero_filter = np.count_nonzero(percentile_blur)
-#
-#     if transf_bool:
-#         bl = percentile_blur.astype(bool) # False is Zero
-#         percentile_blur = np.where(bl == False, 0, img)
-#         # or
-#         # data[~bl] = 0
-#     # print(np.unique(percentile_blur))
-#     # # get the number of pixel changed. Can be that they are not zeros. or pixels changed that become non zero
-#     # pixel_changed = nzero - nzero_filter
-#     # total_pixel = img.shape[0] * img.shape[1] * img.shape[2]
-#     # percentage_changed = np.round(pixel_changed/total_pixel*100,3)
-#     # print('total number of pixel changed: {} of {} \n'
-#     #       'percentage of pixels changed: {}'.format(pixel_changed, total_pixel,percentage_changed))
-#
-#     return percentile_blur
-
 
 def save_images(img: np.array, name:str, ch_last:bool = True)-> np.array:
     """
-    Simple Save numpy array to tiffile
+    Simple Save a numpy array as a TIFF file.
+
+    This function allows saving a numpy array as a TIFF file. The array can represent an image with multiple channels,
+    and the function provides an option to specify whether the channels are the last axis of the array.
 
     Parameters
-    img: numpy array
-    name: path to save img
-    ch_last: if the channels are the last axis of numpy. Default True
+    ----------
+    img : np.array
+        The input image as a NumPy array.
+    name : str
+        The file path to save the image.
+    ch_last : bool, optional
+        Specifies whether the channels are the last axis of the numpy array.
+        If True, the array shape is assumed to be (height, width, channels).
+        If False, the array shape is assumed to be (channels, height, width).
+        Default is True.
 
-    Returns: image numpy array
+    Returns
+    -------
+    np.array
+        The input image numpy array.
+
+    Notes
+    -----
+    - The function saves the image as a TIFF file using the tifffile library.
+    - It converts the input array to float32 before saving to ensure compatibility.
     """
     img_save = np.float32(img)
     if ch_last == True: # channel is the last axis
@@ -203,16 +228,37 @@ def save_images(img: np.array, name:str, ch_last:bool = True)-> np.array:
 
 def save_images_ch_names(img: np.array, name:str, ch_last:bool = True, channel_names:list=None)-> np.array:
     """
-    Save numpy array to tiffile with channel names as metadata
+    Save a numpy array to a TIFF file with channel names as metadata.
+
+    This function allows saving a numpy array as a TIFF file with optional channel names included as metadata.
 
     Parameters
-    img: numpy array
-    name: path to save img
-    channel_names: list with channel name
-    ch_last: if the channels are the last axis of numpy. Default True
+    ----------
+    img : np.array
+        The input image as a NumPy array.
+    name : str
+        The file path to save the image.
+    ch_last : bool, optional
+        Specifies whether the channels are the last axis of the numpy array.
+        If True, the array shape is assumed to be (height, width, channels).
+        If False, the array shape is assumed to be (channels, height, width).
+        Default is True.
+    channel_names : list, optional
+        A list containing channel names for each channel of the image.
+        If provided, each channel name will be included as metadata in the saved TIFF file.
+        Default is None.
 
-    Returns: image numpy array
+    Returns
+    -------
+    np.array
+        The input image numpy array.
+
+    Notes
+    -----
+    - The function saves the image as a TIFF file using the tifffile library.
+    - It converts the input array to float32 before saving to ensure compatibility.
     """
+
     img_save = np.float32(img)
     if ch_last == True: # channel is the last axis
         img_save = np.moveaxis(img_save, -1, 0)
@@ -222,15 +268,37 @@ def save_images_ch_names(img: np.array, name:str, ch_last:bool = True, channel_n
 
 def save_img_ch_names_pages(img: np.array, name:str, ch_last:bool = True, channel_names:list=None)-> np.array:
     """
-    Save numpy array to tiffile with channel names in the tags of tiff file pages
+    Save a numpy array as a TIFF file with channel names in the tags of TIFF file pages.
+
+    This function allows saving a numpy array as a multi-page TIFF file. Each page of the TIFF file corresponds
+    to a channel of the input image, and the function provides an option to specify channel names for each page.
 
     Parameters
-    img: numpy array
-    name: path to save img
-    channel_names: list with channel name
-    ch_last: if the channels are the last axis of numpy. Default True
+    ----------
+    img : np.array
+        The input image as a NumPy array.
+    name : str
+        The file path to save the image.
+    ch_last : bool, optional
+        Specifies whether the channels are the last axis of the numpy array.
+        If True, the array shape is assumed to be (height, width, channels).
+        If False, the array shape is assumed to be (channels, height, width).
+        Default is True.
+    channel_names : list, optional
+        A list containing channel names for each channel of the image.
+        If provided, each TIFF page will have a corresponding channel name in the tags.
+        Default is None.
 
-    Returns: image numpy array
+    Returns
+    -------
+    np.array
+        The input image numpy array.
+
+    Notes
+    -----
+    - The function saves the image as a multi-page TIFF file using the tifffile library.
+    - It converts the input array to float32 before saving to ensure compatibility.
+    - Channel names provided in the `channel_names` parameter will be included in the tags of TIFF file pages.
     """
     img_save = np.float32(img)
     if ch_last == True: # channel is the last axis
@@ -244,82 +312,169 @@ def save_img_ch_names_pages(img: np.array, name:str, ch_last:bool = True, channe
 
 
 
-
-# def out_ratio_changedth(img: np.array, th:list=[])-> np.array:
-#     '''
-#
-#     :param img:
-#     :param window_size:
-#     :param percentiles:
-#     :param transf_bool:
-#     :return:
-#     Percentile different from channel
-#
-#     '''
-#
-#     th_img = np.empty(img.shape)
-#     for ch in range(img.shape[2]):
-#         img_ch = img[:,:,ch]
-#         new_img = np.where(img_ch >= th, img, 0)
-#         th_img[:,:,ch] = new_img
-#     return th_img
-#
-#
-#
 ##########################################################################
 #####Other thresholds
 import skimage
-def th_otsu(img):
+def th_otsu(img: np.ndarray) -> np.ndarray:
     """
-    Otsu thresholding
+    Apply Otsu's thresholding to an image based on skimage implementation.
+
+    This function uses Otsu's method to determine the optimal threshold value and
+    sets all pixel values below this threshold to 0.
+
+    Parameters
+    ----------
+    img : np.ndarray
+        The input image as a NumPy array.
+
+    Returns
+    -------
+    np.ndarray
+        The thresholded image with pixels below the threshold set to 0.
     """
     th = skimage.filters.threshold_otsu(img)
     new_img = np.where(img > th, img, 0)
     return new_img
 
-def th_isodata(img):
+def th_isodata(img: np.ndarray) -> np.ndarray:
     """
-    Isodata thresholding
+    Apply Isodata thresholding to an image based on skimage implementation.
+
+    This function uses the Isodata method to determine the optimal threshold value and
+    sets all pixel values below this threshold to 0.
+
+    Parameters
+    ----------
+    img : np.ndarray
+        The input image as a NumPy array.
+
+    Returns
+    -------
+    np.ndarray
+        The thresholded image with pixels below the threshold set to 0.
     """
     th = skimage.filters.threshold_isodata(img)
     new_img = np.where(img > th, img, 0)
     return new_img
 
-def th_li(img):
+
+def th_li(img: np.ndarray) -> np.ndarray:
     """
-    Li thresholding
+    Apply Li thresholding to an image based on skimage implementation.
+
+    This function uses the Li method to determine the optimal threshold value and
+    sets all pixel values below this threshold to 0.
+
+    Parameters
+    ----------
+    img : np.ndarray
+        The input image as a NumPy array.
+
+    Returns
+    -------
+    np.ndarray
+        The thresholded image with pixels below the threshold set to 0.
     """
     th = skimage.filters.threshold_li(img)
     new_img = np.where(img > th, img, 0)
     return new_img
 
-def th_yen(img):
+
+def th_yen(img: np.ndarray) -> np.ndarray:
     """
-    Yen thresholding
+    Apply Yen thresholding to an image based on skimage implementation.
+
+    This function uses the Yen method to determine the optimal threshold value and
+    sets all pixel values below this threshold to 0.
+
+    Parameters
+    ----------
+    img : np.ndarray
+        The input image as a NumPy array.
+
+    Returns
+    -------
+    np.ndarray
+        The thresholded image with pixels below the threshold set to 0.
     """
     th = skimage.filters.threshold_yen(img)
     new_img = np.where(img > th, img, 0)
     return new_img
 
-def th_triangle(img):
+
+def th_triangle(img: np.ndarray) -> np.ndarray:
     """
-    triangle thresholding
+    Apply triangle thresholding to an image based on skimage implementation.
+
+    This function uses the triangle method to determine the optimal threshold value and
+    sets all pixel values below this threshold to 0.
+
+    Parameters
+    ----------
+    img : np.ndarray
+        The input image as a NumPy array.
+
+    Returns
+    -------
+    np.ndarray
+        The thresholded image with pixels below the threshold set to 0.
     """
     th = skimage.filters.threshold_triangle(img)
     new_img = np.where(img > th, img, 0)
     return new_img
 
-def th_mean(img):
+def th_mean(img: np.ndarray) -> np.ndarray:
     """
-    mean thresholding
+    Apply mean thresholding to an image based on skimage implementation..
+
+    This function uses the mean method to determine the threshold value and
+    sets all pixel values below this threshold to 0.
+
+    Parameters
+    ----------
+    img : np.ndarray
+        The input image as a NumPy array.
+
+    Returns
+    -------
+    np.ndarray
+        The thresholded image with pixels below the threshold set to 0.
     """
     th = skimage.filters.threshold_mean(img)
     new_img = np.where(img > th, img, 0)
     return new_img
 
-def th_local(img, block_size=3, method='gaussian'):
+def th_local(img: np.ndarray, block_size: int = 3, method: str = 'gaussian') -> np.ndarray:
     """
-    local thresholding
+    Apply local thresholding to an image based on local
+    neighborhoods defined by the block size.
+
+    Parameters
+    ----------
+    img : np.ndarray
+        The input image as a NumPy array.
+    block_size : int, optional
+        The size of the local neighborhood for threshold calculation.
+        Must be an odd number. Default is 3.
+    method : str, optional
+        The method used for local thresholding. Options include 'gaussian',
+        'mean', 'median'. Default is 'gaussian'.
+
+    Returns
+    -------
+    np.ndarray
+        The thresholded image with pixels below their local threshold set to 0.
+
+    Examples
+    --------
+    >>> img = np.random.rand(100, 100)
+    >>> thresholded_img = th_local(img, block_size=5, method='mean')
+    >>> print(thresholded_img.min(), thresholded_img.max())
+
+    Notes
+    -----
+    Local thresholding is useful for images with varying lighting conditions,
+    as it adjusts the threshold dynamically across the image.
     """
     th = skimage.filters.threshold_local(img, block_size=block_size, method=method)
     new_img = np.where(img > th, img, 0)
@@ -359,7 +514,35 @@ def center_pixel_kernel(size):
 
 def hybrid_median_filter(img: np.array, window_size:int = 3, percentile:int=50, transf_bool = True )-> np.array:
     """
-    Function for hybrid median filter
+    Apply a hybrid median filter to the image.
+
+    This function implements a hybrid median filter, which combines the results of percentile filtering
+    using different shaped kernels (cross, plus, and center pixel) to reduce noise while preserving edges.
+
+    Parameters
+    ----------
+    img : np.array
+        The input image as a NumPy array.
+    window_size : int, optional
+        The size of the kernel window. Default is 3.
+    percentile : int, optional
+        The percentile value to be applied to the array inside each kernel.
+    transf_bool : bool, optional
+        If True, the function will transform the image to boolean values (0 or 1) before filtering.
+        This helps identify noise and set those values to zero to prevent unnecessary blur.
+        Default is True.
+
+    Returns
+    -------
+    np.array
+        The image filtered with the hybrid median filter.
+
+    Notes
+    -----
+    - The hybrid median filter applies percentile filtering using three different shaped kernels:
+      cross, plus, and center pixel.
+    - Each kernel is applied to the input image separately, and the results are combined to form a stack of filtered images.
+    - The final filtered image is obtained by computing the percentile of the stack along the channel axis.
     """
 
     from scipy.ndimage import percentile_filter
@@ -751,4 +934,59 @@ def bm3d_filter(img: np.array, sigma_psd:float = 0.2)-> np.array:
 
 
 
+
+#
+# def percentile_filter_changedpercentiles(img: np.array, window_size:int = 3, percentiles:list=[], transf_bool = True )-> np.array:
+#     '''
+#
+#     :param img:
+#     :param window_size:
+#     :param percentiles:
+#     :param transf_bool:
+#     :return:
+#     Percentile different from channel
+#
+#     '''
+#     from scipy.ndimage import percentile_filter
+#     kernel = np.ones((window_size, window_size))
+#     # todo check if disk is better
+#     # from skimage.morphology import disk
+#     # kernel = disk(window_size) # disk(3) will create a window 5 *5 plus points on edges
+#
+#     # make sure that the percentiles input is a list of n channel elements
+#     if len(percentiles)!= img.shape[-1]:
+#         raise ValueError(f"Percentiles must have the same number of elements as "
+#                          f"the number of channels in the image, "
+#                          f"expected {img.shape[-1]} but got {len(percentiles)}")
+#     if transf_bool:
+#         img_to_apply = np.where(img > 0, 1, 0)
+#     else:
+#         img_to_apply = copy.deepcopy(img)
+#
+#     nzero = np.count_nonzero(img_to_apply)
+#
+#     percentile_blur = np.empty(img.shape)
+#     for ch in range(img_to_apply.shape[2]):
+#         img_ch = img_to_apply[:,:,ch]
+#         med = percentile_filter(img_ch,
+#                                         percentile=percentiles[ch],
+#                                         footprint=kernel)
+#         percentile_blur[:,:,ch] = med
+#
+#     nzero_filter = np.count_nonzero(percentile_blur)
+#
+#     if transf_bool:
+#         bl = percentile_blur.astype(bool) # False is Zero
+#         percentile_blur = np.where(bl == False, 0, img)
+#         # or
+#         # data[~bl] = 0
+#     # print(np.unique(percentile_blur))
+#     # # get the number of pixel changed. Can be that they are not zeros. or pixels changed that become non zero
+#     # pixel_changed = nzero - nzero_filter
+#     # total_pixel = img.shape[0] * img.shape[1] * img.shape[2]
+#     # percentage_changed = np.round(pixel_changed/total_pixel*100,3)
+#     # print('total number of pixel changed: {} of {} \n'
+#     #       'percentage of pixels changed: {}'.format(pixel_changed, total_pixel,percentage_changed))
+#
+#     return percentile_blur
 
