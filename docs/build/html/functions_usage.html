@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Functions usage &mdash; PENGUIN 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Script usage" href="script_usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PENGUIN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Set up</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebook_usage.html">Notebook usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="script_usage.html">Script usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Functions usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#parse-image">Parse Image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ImageParser.parse_image"><code class="docutils literal notranslate"><span class="pre">parse_image()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImageParser.parse_image_pages"><code class="docutils literal notranslate"><span class="pre">parse_image_pages()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImageParser.parse_image_pages_namesCH"><code class="docutils literal notranslate"><span class="pre">parse_image_pages_namesCH()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#preprocessing-image">Preprocessing Image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.normalize_channel_cv2_minmax"><code class="docutils literal notranslate"><span class="pre">normalize_channel_cv2_minmax()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#thresholding">Thresholding</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.out_ratio2"><code class="docutils literal notranslate"><span class="pre">out_ratio2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.th_otsu"><code class="docutils literal notranslate"><span class="pre">th_otsu()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.th_isodata"><code class="docutils literal notranslate"><span class="pre">th_isodata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.th_li"><code class="docutils literal notranslate"><span class="pre">th_li()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.th_yen"><code class="docutils literal notranslate"><span class="pre">th_yen()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.th_triangle"><code class="docutils literal notranslate"><span class="pre">th_triangle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.th_mean"><code class="docutils literal notranslate"><span class="pre">th_mean()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.th_local"><code class="docutils literal notranslate"><span class="pre">th_local()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#percentile-filter">Percentile Filter</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.percentile_filter"><code class="docutils literal notranslate"><span class="pre">percentile_filter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.hybrid_median_filter"><code class="docutils literal notranslate"><span class="pre">hybrid_median_filter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#save-images">Save Images</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.save_images"><code class="docutils literal notranslate"><span class="pre">save_images()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.save_images_ch_names"><code class="docutils literal notranslate"><span class="pre">save_images_ch_names()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ImagePreprocessFilters.save_img_ch_names_pages"><code class="docutils literal notranslate"><span class="pre">save_img_ch_names_pages()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PENGUIN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Functions usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/functions_usage.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="functions-usage">
+<h1>Functions usage<a class="headerlink" href="#functions-usage" title="Link to this heading"></a></h1>
+<section id="parse-image">
+<h2>Parse Image<a class="headerlink" href="#parse-image" title="Link to this heading"></a></h2>
+<p>To parse tiffiles into numpy arrays you can use the <code class="docutils literal notranslate"><span class="pre">ImageParser.parse_image()</span></code> function:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ImageParser.parse_image">
+<span class="sig-prename descclassname"><span class="pre">ImageParser.</span></span><span class="sig-name descname"><span class="pre">parse_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#ImageParser.parse_image" title="Link to this definition"></a></dt>
+<dd><p>Load an image from the specified path, process it, and return it as a NumPy array.</p>
+<p>The function reads a TIFF image, squeezes the array to remove single-dimensional entries,
+and moves the axis to ensure the array has dimensions (X, Y, channels).</p>
+<section id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img_path<span class="classifier">str</span></dt><dd><p>Path to the image file (not the mask).</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray or None</dt><dd><p>A NumPy array representing the image with shape (X, Y, channels).
+Returns None if there is an error reading the image.</p>
+</dd>
+</dl>
+</section>
+<section id="notes">
+<h3>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h3>
+<p>This function is designed to handle OME-TIFF images specifically. If the image cannot be read,
+the function will print an error message and return None.</p>
+</section>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img_array</span> <span class="o">=</span> <span class="n">parse_image</span><span class="p">(</span><span class="s1">&#39;path/to/image.ome.tiff&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">img_array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Image shape:&quot;</span><span class="p">,</span> <span class="n">img_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<p>If your tiffiles are not stacks but page based tiffs:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ImageParser.parse_image_pages">
+<span class="sig-prename descclassname"><span class="pre">ImageParser.</span></span><span class="sig-name descname"><span class="pre">parse_image_pages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#ImageParser.parse_image_pages" title="Link to this definition"></a></dt>
+<dd><p>Load a TIFF file with multiple pages and return it as a NumPy array.</p>
+<p>This function reads a multi-page TIFF file, extracts each page as an image,
+and combines them into a single NumPy array with dimensions (X, Y, channels).</p>
+<section id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img_path<span class="classifier">str</span></dt><dd><p>Path to the TIFF image file.</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h3>Returns<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>A NumPy array representing the image with shape (X, Y, channels).</p>
+</dd>
+</dl>
+</section>
+<section id="id3">
+<h3>Examples<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img_array</span> <span class="o">=</span> <span class="n">parse_image_pages</span><span class="p">(</span><span class="s1">&#39;path/to/image.tiff&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Image shape:&quot;</span><span class="p">,</span> <span class="n">img_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<p>Lastly, if you want to extract the channel names from the pages of TIFF use <code class="docutils literal notranslate"><span class="pre">ImageParser.parse_image_pages_namesCH()</span></code> function.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ImageParser.parse_image_pages_namesCH">
+<span class="sig-prename descclassname"><span class="pre">ImageParser.</span></span><span class="sig-name descname"><span class="pre">parse_image_pages_namesCH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ImageParser.parse_image_pages_namesCH" title="Link to this definition"></a></dt>
+<dd><p>Load a TIFF file with multiple pages and retrieve the names of the pages.</p>
+<p>This function reads a multi-page TIFF file, extracts each page as an image,
+and retrieves the names of the channels from the page tags. The images are
+combined into a single NumPy array with dimensions (X, Y, channels).</p>
+<section id="id4">
+<h3>Parameters<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img_path<span class="classifier">str</span></dt><dd><p>Path to the TIFF image file.</p>
+</dd>
+</dl>
+</section>
+<section id="id5">
+<h3>Returns<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>tuple[np.ndarray, list[str]]</dt><dd><p>A tuple containing:
+- A NumPy array representing the image with shape (X, Y, channels).
+- A list of strings representing the names of the channels.</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h3>Notes<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<p>The function looks for ‘PageName’ or ‘ImageDescription’ tags in each page
+to determine the channel names. If neither tag is found, the channel name
+is not added to the list.</p>
+</section>
+<section id="id7">
+<h3>Examples<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img_array</span><span class="p">,</span> <span class="n">channel_names</span> <span class="o">=</span> <span class="n">parse_image_pages_namesCH</span><span class="p">(</span><span class="s1">&#39;path/to/image.tiff&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">img_array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Image shape:&quot;</span><span class="p">,</span> <span class="n">img_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Channel names:&quot;</span><span class="p">,</span> <span class="n">channel_names</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+</section>
+<section id="preprocessing-image">
+<h2>Preprocessing Image<a class="headerlink" href="#preprocessing-image" title="Link to this heading"></a></h2>
+<p>In this pipeline there are two main preprocessing functions: saturation of outliers and the normalization.</p>
+<p>To saturate outliers you can use:
+.. autofunction:: ImagePreprocessFilters.remove_outliers</p>
+<p>To normalize, PENGUIN uses:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.normalize_channel_cv2_minmax">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">normalize_channel_cv2_minmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.normalize_channel_cv2_minmax" title="Link to this definition"></a></dt>
+<dd><p>Normalize each channel of the image using the OpenCV min-max normalization function.</p>
+<p>This function processes each channel of the input image independently,
+normalizing pixel values to the range [0, 1] using OpenCV’s <cite>cv2.normalize</cite> method.</p>
+<section id="id8">
+<h3>Parameters<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.ndarray</span></dt><dd><p>The input image as a NumPy array with shape (H, W, C), where H is the height,
+W is the width, and C is the number of channels.</p>
+</dd>
+</dl>
+</section>
+<section id="id9">
+<h3>Returns<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>The image with each channel min-max normalized to the range [0, 1].</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h3>Examples<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">255</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normalized_img</span> <span class="o">=</span> <span class="n">normalize_channel_cv2_minmax</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">normalized_img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">normalized_img</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">normalized_img</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3>Notes<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<p>This normalization ensures that the minimum value of each channel is 0 and
+the maximum value is 1.</p>
+</section>
+</dd></dl>
+
+</section>
+<section id="thresholding">
+<h2>Thresholding<a class="headerlink" href="#thresholding" title="Link to this heading"></a></h2>
+<p>Thresholding allows to discard background signals, essentially removing signals of low intensity (already normalized).</p>
+<p>To do this, the most straightforward approach is thresholding based on the pixel value, where pixel values below this threshold are set to 0.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.out_ratio2">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">out_ratio2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.out_ratio2" title="Link to this definition"></a></dt>
+<dd><p>Apply thresholding to an image.</p>
+<p>This function sets all pixels below the specified threshold to 0.
+The input image should be a single-channel image if thresholding is to be applied per channel.</p>
+<section id="id12">
+<h3>Parameters<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.ndarray</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+<dt>th<span class="classifier">float, optional</span></dt><dd><p>The threshold value. All pixel values below this threshold will be set to 0.
+Default is 0.1.</p>
+</dd>
+</dl>
+</section>
+<section id="id13">
+<h3>Returns<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>The thresholded image, with all pixels below the threshold set to 0.</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h3>Examples<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">thresholded_img</span> <span class="o">=</span> <span class="n">out_ratio2</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">th</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">thresholded_img</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">thresholded_img</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="id15">
+<h3>Notes<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
+<p>The function performs element-wise thresholding, so it is suitable for both 2D and 3D arrays.</p>
+</section>
+</dd></dl>
+
+<p>Other thresholding techniques are also available:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.th_otsu">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">th_otsu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.th_otsu" title="Link to this definition"></a></dt>
+<dd><p>Apply Otsu’s thresholding to an image based on skimage implementation.</p>
+<p>This function uses Otsu’s method to determine the optimal threshold value and
+sets all pixel values below this threshold to 0.</p>
+<section id="id16">
+<h3>Parameters<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.ndarray</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+</dl>
+</section>
+<section id="id17">
+<h3>Returns<a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>The thresholded image with pixels below the threshold set to 0.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.th_isodata">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">th_isodata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.th_isodata" title="Link to this definition"></a></dt>
+<dd><p>Apply Isodata thresholding to an image based on skimage implementation.</p>
+<p>This function uses the Isodata method to determine the optimal threshold value and
+sets all pixel values below this threshold to 0.</p>
+<section id="id18">
+<h3>Parameters<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.ndarray</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+</dl>
+</section>
+<section id="id19">
+<h3>Returns<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>The thresholded image with pixels below the threshold set to 0.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.th_li">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">th_li</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.th_li" title="Link to this definition"></a></dt>
+<dd><p>Apply Li thresholding to an image based on skimage implementation.</p>
+<p>This function uses the Li method to determine the optimal threshold value and
+sets all pixel values below this threshold to 0.</p>
+<section id="id20">
+<h3>Parameters<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.ndarray</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+</dl>
+</section>
+<section id="id21">
+<h3>Returns<a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>The thresholded image with pixels below the threshold set to 0.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.th_yen">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">th_yen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.th_yen" title="Link to this definition"></a></dt>
+<dd><p>Apply Yen thresholding to an image based on skimage implementation.</p>
+<p>This function uses the Yen method to determine the optimal threshold value and
+sets all pixel values below this threshold to 0.</p>
+<section id="id22">
+<h3>Parameters<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.ndarray</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+</dl>
+</section>
+<section id="id23">
+<h3>Returns<a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>The thresholded image with pixels below the threshold set to 0.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.th_triangle">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">th_triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.th_triangle" title="Link to this definition"></a></dt>
+<dd><p>Apply triangle thresholding to an image based on skimage implementation.</p>
+<p>This function uses the triangle method to determine the optimal threshold value and
+sets all pixel values below this threshold to 0.</p>
+<section id="id24">
+<h3>Parameters<a class="headerlink" href="#id24" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.ndarray</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+</dl>
+</section>
+<section id="id25">
+<h3>Returns<a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>The thresholded image with pixels below the threshold set to 0.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.th_mean">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">th_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.th_mean" title="Link to this definition"></a></dt>
+<dd><p>Apply mean thresholding to an image based on skimage implementation..</p>
+<p>This function uses the mean method to determine the threshold value and
+sets all pixel values below this threshold to 0.</p>
+<section id="id26">
+<h3>Parameters<a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.ndarray</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+</dl>
+</section>
+<section id="id27">
+<h3>Returns<a class="headerlink" href="#id27" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>The thresholded image with pixels below the threshold set to 0.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.th_local">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">th_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gaussian'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.th_local" title="Link to this definition"></a></dt>
+<dd><p>Apply local thresholding to an image based on local
+neighborhoods defined by the block size.</p>
+<section id="id28">
+<h3>Parameters<a class="headerlink" href="#id28" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.ndarray</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+<dt>block_size<span class="classifier">int, optional</span></dt><dd><p>The size of the local neighborhood for threshold calculation.
+Must be an odd number. Default is 3.</p>
+</dd>
+<dt>method<span class="classifier">str, optional</span></dt><dd><p>The method used for local thresholding. Options include ‘gaussian’,
+‘mean’, ‘median’. Default is ‘gaussian’.</p>
+</dd>
+</dl>
+</section>
+<section id="id29">
+<h3>Returns<a class="headerlink" href="#id29" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>The thresholded image with pixels below their local threshold set to 0.</p>
+</dd>
+</dl>
+</section>
+<section id="id30">
+<h3>Examples<a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">thresholded_img</span> <span class="o">=</span> <span class="n">th_local</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">block_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">thresholded_img</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">thresholded_img</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="id31">
+<h3>Notes<a class="headerlink" href="#id31" title="Link to this heading"></a></h3>
+<p>Local thresholding is useful for images with varying lighting conditions,
+as it adjusts the threshold dynamically across the image.</p>
+</section>
+</dd></dl>
+
+</section>
+<section id="percentile-filter">
+<h2>Percentile Filter<a class="headerlink" href="#percentile-filter" title="Link to this heading"></a></h2>
+<p>In median filters, the center pixel is substituted with the median of the ranked values from its surrounding pixels. They excel in dealing with impulse noise, as such noise usually ranks at the extreme ends of the brightness scale. Percentile filters, akin to median filters, adjust pixel values based on a range of percentiles rather than solely the median (50th percentile). Different markers may benefit from different values of noise reduction, as they may display more or less shot noise.</p>
+<p>To apply percentile filter to each channel:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.percentile_filter">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">percentile_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percentile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transf_bool</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.percentile_filter" title="Link to this definition"></a></dt>
+<dd><p>Apply a percentile filter ( Scipy implementation) to the image.</p>
+<section id="id32">
+<h3>Parameters<a class="headerlink" href="#id32" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.ndarray</span></dt><dd><p>The input image as a NumPy array. If different values per channel this should be only the specific channel.</p>
+</dd>
+<dt>window_size<span class="classifier">int, optional</span></dt><dd><p>The size of the kernel window. Default is 3, creating a 3x3 kernel.</p>
+</dd>
+<dt>percentile<span class="classifier">int, optional</span></dt><dd><p>The percentile value to be applied to the array inside the window.</p>
+</dd>
+<dt>transf_bool<span class="classifier">bool, optional</span></dt><dd><p>If True, the function will transform the image to boolean values (0 or 1) before applying the filter.
+The percentile filter is only applied to determine which pixels are noise and only those are set to 0.
+This prevents unnecessary blur by identifying noise and setting those values to zero.
+Default is True.</p>
+</dd>
+</dl>
+</section>
+<section id="id33">
+<h3>Returns<a class="headerlink" href="#id33" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>The image filtered with the percentile method.</p>
+</dd>
+</dl>
+</section>
+<section id="id34">
+<h3>Notes<a class="headerlink" href="#id34" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The function applies a percentile filter to the input image.</p></li>
+<li><p>The kernel used for filtering is a square window of size (window_size, window_size).</p></li>
+<li><p>If <cite>transf_bool</cite> is True, the image is transformed to boolean values (0 or 1) before filtering,
+preventing unnecessary blur by identifying noise and setting those values to zero.</p></li>
+<li><p>If <cite>transf_bool</cite> is False, the filter is applied directly to the image.</p></li>
+</ul>
+</section>
+</dd></dl>
+
+<p>If you want to apply the hybrid median filter, you can check this implementation:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.hybrid_median_filter">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">hybrid_median_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percentile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transf_bool</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.hybrid_median_filter" title="Link to this definition"></a></dt>
+<dd><p>Apply a hybrid median filter to the image.</p>
+<p>This function implements a hybrid median filter, which combines the results of percentile filtering
+using different shaped kernels (cross, plus, and center pixel) to reduce noise while preserving edges.</p>
+<section id="id35">
+<h3>Parameters<a class="headerlink" href="#id35" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.array</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+<dt>window_size<span class="classifier">int, optional</span></dt><dd><p>The size of the kernel window. Default is 3.</p>
+</dd>
+<dt>percentile<span class="classifier">int, optional</span></dt><dd><p>The percentile value to be applied to the array inside each kernel.</p>
+</dd>
+<dt>transf_bool<span class="classifier">bool, optional</span></dt><dd><p>If True, the function will transform the image to boolean values (0 or 1) before filtering.
+This helps identify noise and set those values to zero to prevent unnecessary blur.
+Default is True.</p>
+</dd>
+</dl>
+</section>
+<section id="id36">
+<h3>Returns<a class="headerlink" href="#id36" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.array</dt><dd><p>The image filtered with the hybrid median filter.</p>
+</dd>
+</dl>
+</section>
+<section id="id37">
+<h3>Notes<a class="headerlink" href="#id37" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The hybrid median filter applies percentile filtering using three different shaped kernels:
+cross, plus, and center pixel.</p></li>
+<li><p>Each kernel is applied to the input image separately, and the results are combined to form a stack of filtered images.</p></li>
+<li><p>The final filtered image is obtained by computing the percentile of the stack along the channel axis.</p></li>
+</ul>
+</section>
+</dd></dl>
+
+</section>
+<section id="save-images">
+<h2>Save Images<a class="headerlink" href="#save-images" title="Link to this heading"></a></h2>
+<p>Lastly, to save the denoised images one can use <code class="docutils literal notranslate"><span class="pre">ImagePreprocessFilters.save_images()</span></code> to multitiffs:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.save_images">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">save_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_last</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.save_images" title="Link to this definition"></a></dt>
+<dd><p>Simple Save a numpy array as a TIFF file.</p>
+<p>This function allows saving a numpy array as a TIFF file. The array can represent an image with multiple channels,
+and the function provides an option to specify whether the channels are the last axis of the array.</p>
+<section id="id38">
+<h3>Parameters<a class="headerlink" href="#id38" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.array</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+<dt>name<span class="classifier">str</span></dt><dd><p>The file path to save the image.</p>
+</dd>
+<dt>ch_last<span class="classifier">bool, optional</span></dt><dd><p>Specifies whether the channels are the last axis of the numpy array.
+If True, the array shape is assumed to be (height, width, channels).
+If False, the array shape is assumed to be (channels, height, width).
+Default is True.</p>
+</dd>
+</dl>
+</section>
+<section id="id39">
+<h3>Returns<a class="headerlink" href="#id39" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.array</dt><dd><p>The input image numpy array.</p>
+</dd>
+</dl>
+</section>
+<section id="id40">
+<h3>Notes<a class="headerlink" href="#id40" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The function saves the image as a TIFF file using the tifffile library.</p></li>
+<li><p>It converts the input array to float32 before saving to ensure compatibility.</p></li>
+</ul>
+</section>
+</dd></dl>
+
+<p>To save as multipage tiffs with page names as metadata:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.save_images_ch_names">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">save_images_ch_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_last</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.save_images_ch_names" title="Link to this definition"></a></dt>
+<dd><p>Save a numpy array to a TIFF file with channel names as metadata.</p>
+<p>This function allows saving a numpy array as a TIFF file with optional channel names included as metadata.</p>
+<section id="id41">
+<h3>Parameters<a class="headerlink" href="#id41" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.array</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+<dt>name<span class="classifier">str</span></dt><dd><p>The file path to save the image.</p>
+</dd>
+<dt>ch_last<span class="classifier">bool, optional</span></dt><dd><p>Specifies whether the channels are the last axis of the numpy array.
+If True, the array shape is assumed to be (height, width, channels).
+If False, the array shape is assumed to be (channels, height, width).
+Default is True.</p>
+</dd>
+<dt>channel_names<span class="classifier">list, optional</span></dt><dd><p>A list containing channel names for each channel of the image.
+If provided, each channel name will be included as metadata in the saved TIFF file.
+Default is None.</p>
+</dd>
+</dl>
+</section>
+<section id="id42">
+<h3>Returns<a class="headerlink" href="#id42" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.array</dt><dd><p>The input image numpy array.</p>
+</dd>
+</dl>
+</section>
+<section id="id43">
+<h3>Notes<a class="headerlink" href="#id43" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The function saves the image as a TIFF file using the tifffile library.</p></li>
+<li><p>It converts the input array to float32 before saving to ensure compatibility.</p></li>
+</ul>
+</section>
+</dd></dl>
+
+<p>And to save the channel names as page names use:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ImagePreprocessFilters.save_img_ch_names_pages">
+<span class="sig-prename descclassname"><span class="pre">ImagePreprocessFilters.</span></span><span class="sig-name descname"><span class="pre">save_img_ch_names_pages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_last</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#ImagePreprocessFilters.save_img_ch_names_pages" title="Link to this definition"></a></dt>
+<dd><p>Save a numpy array as a TIFF file with channel names in the tags of TIFF file pages.</p>
+<p>This function allows saving a numpy array as a multi-page TIFF file. Each page of the TIFF file corresponds
+to a channel of the input image, and the function provides an option to specify channel names for each page.</p>
+<section id="id44">
+<h3>Parameters<a class="headerlink" href="#id44" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>img<span class="classifier">np.array</span></dt><dd><p>The input image as a NumPy array.</p>
+</dd>
+<dt>name<span class="classifier">str</span></dt><dd><p>The file path to save the image.</p>
+</dd>
+<dt>ch_last<span class="classifier">bool, optional</span></dt><dd><p>Specifies whether the channels are the last axis of the numpy array.
+If True, the array shape is assumed to be (height, width, channels).
+If False, the array shape is assumed to be (channels, height, width).
+Default is True.</p>
+</dd>
+<dt>channel_names<span class="classifier">list, optional</span></dt><dd><p>A list containing channel names for each channel of the image.
+If provided, each TIFF page will have a corresponding channel name in the tags.
+Default is None.</p>
+</dd>
+</dl>
+</section>
+<section id="id45">
+<h3>Returns<a class="headerlink" href="#id45" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>np.array</dt><dd><p>The input image numpy array.</p>
+</dd>
+</dl>
+</section>
+<section id="id46">
+<h3>Notes<a class="headerlink" href="#id46" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The function saves the image as a multi-page TIFF file using the tifffile library.</p></li>
+<li><p>It converts the input array to float32 before saving to ensure compatibility.</p></li>
+<li><p>Channel names provided in the <cite>channel_names</cite> parameter will be included in the tags of TIFF file pages.</p></li>
+</ul>
+</section>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="script_usage.html" class="btn btn-neutral float-left" title="Script usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, A.M.Sequeira.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
