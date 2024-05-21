@@ -66,7 +66,7 @@ class ImageProcessingWidget:
 
             self.result = [y for x in os.walk(folder_path) for y in glob(os.path.join(x[0], '*.ome.tiff'))]
             num_images = len(self.result)
-            print(f"Number of images identified: {num_images}")
+            # print(f"Number of images identified: {num_images}")
 
             self.channel_names = set([name.split("_")[-1].split(".ome.tiff")[0] for name in self.result])
 
