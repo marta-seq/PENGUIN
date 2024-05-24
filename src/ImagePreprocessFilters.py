@@ -177,7 +177,7 @@ def percentile_filter(img: np.ndarray, window_size: int = 3, percentile: int = 5
 
     nzero = np.count_nonzero(img_to_apply)
 
-    percentile_blur = percentile_filter(img_to_apply,
+    percentile_blur = nd.percentile_filter(img_to_apply,
                                         percentile=percentile,
                                         footprint=kernel)
     nzero_filter = np.count_nonzero(percentile_blur)
