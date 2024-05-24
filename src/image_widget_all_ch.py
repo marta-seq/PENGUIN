@@ -325,7 +325,7 @@ class SaveWidget:
         #     download_table.download(csv_path) # download in the wrong folder
 
         df = pd.DataFrame(download_table.value)
-        df.to_csv(csv_path, index=False)
+        df.to_csv(csv_path, index=True)
 
         imgs_filtered = map(lambda i: JN.calculus_multitiff_lists(i, th_list, percentile_list), norm_imgs_channel)
         imgs_filtered = list(imgs_filtered)
