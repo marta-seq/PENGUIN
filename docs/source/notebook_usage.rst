@@ -11,7 +11,7 @@ Open the notebook and click Kernel -> Restart and Run all
 
 For all channels in a stack it should look like this:
 
-.. image:: D:\\PycharmProjects\\phd\\Preprocess_IMC\\figs\\all_ch_image.png
+.. image:: figs\\all_ch_image.png
     :alt: layout of the noteboook and folder structure for stacks of channels
 
 
