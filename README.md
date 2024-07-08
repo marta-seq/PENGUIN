@@ -116,6 +116,9 @@ You can also use directly PENGUIN functions. Just check pipeline files.
 
 ## Credits
 If you find this repository useful in your research or for educational purposes please refer to:
+Sequeira, A. M., Ijsselsteijn, M. E., Rocha, M., & de Miranda, N. F. (2024). PENGUIN: A rapid and efficient image preprocessing tool for multiplexed spatial proteomics. bioRxiv, 2024-07.
+doi: https://doi.org/10.1101/2024.07.01.601513
+
 
 ## License
 
