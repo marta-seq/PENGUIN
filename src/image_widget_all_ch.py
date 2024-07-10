@@ -180,6 +180,45 @@ class ImageWidget:
         with self.plot_output_ZOOM:
             plot_comparison_zoom([obj[0] for obj in imgs_channel],[obj[0] for obj in imgs_filtered], res, high_contrast)
 
+    def _create_dashboard(self):
+        self.dropdown_ch_name.options = self.channel_names
+        self.dropdown_image_names.options = [os.path.basename(f) for f in self.files]
+
+        # input_widgets = widgets.HBox([self.dropdown_ch_name, self.dropdown_percentile, self.dropdown_th])
+        # input_widgets_images = widgets.HBox([self.dropdown_sample_images_number, self.dropdown_sample_images])
+        # input_widgets_images2 = widgets.HBox(
+        #     [self.dropdown_res, self.dropdown_high_constrast_compare])
+
+        input_widgets = widgets.HBox([self.dropdown_ch_name, self.dropdown_percentile, self.dropdown_th])
+
+        # Create the Display statement
+        display_statement = widgets.Label(value='Display:')
+        display_statement.layout.margin = '0px 0px 5px 0px'  # Add margin to the bottom
+
+        # Create the dropdown widgets for the number of images subset, high contrast, and resolution
+        display_dropdowns = widgets.HBox([self.dropdown_sample_images_number, self.dropdown_sample_images,
+                                          self.dropdown_high_constrast_compare, self.dropdown_res,
+                                          self.dropdown_image_names])
+
+        # Combine the Display statement and dropdown widgets
+        display_layout = widgets.VBox([display_statement, display_dropdowns])
+
+        tab = widgets.Tab([self.plot_output_images, self.plot_output_histogram, self.plot_output_comparison,
+                           self.plot_output_ZOOM, self.plot_output_psnr])
+        tab.set_title(0, 'Images')
+        tab.set_title(1, 'Histogram')
+        tab.set_title(2, 'Compare images')
+        tab.set_title(3, 'Compare ZOOM')
+        tab.set_title(4, 'PSNR')
+
+        dashboard_layout = widgets.Layout(height='auto', overflow='auto', flex='1', max_height='100000px')
+        # dashboard = widgets.VBox([input_widgets, input_widgets_images, input_widgets_images2, tab],
+        #                          layout=dashboard_layout)
+        dashboard = widgets.VBox([input_widgets, display_layout, tab])
+
+        display(dashboard)
+
+
     def update_folder_and_channels(self, folder_path):
         self.folder_path = folder_path
         self.load_files_from_folder(folder_path)
