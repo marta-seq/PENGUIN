@@ -4,7 +4,6 @@
 [![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 [![Suggestions Welcome](https://img.shields.io/badge/Suggestions-Welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Release](https://img.shields.io/github/v/release/marta-seq/PENGUIN.svg)](https://github.com/marta-seq/PENGUIN/releases/)
-
 # PENGUIN
 
 *PENGUIN* - Percentile Normalization GUI Image deNoising is a 
@@ -51,7 +50,7 @@ To manually create and install packages use:
 ```bash
 conda create --name penguin
 conda activate penguin
-conda install matplotlib pandas panel numpy opencv scikit-image ipywidgets jupyter ipykernel plotly
+conda install matplotlib pandas panel opencv scikit-image ipywidgets jupyter ipykernel plotly
 pip install apeer-ometiff-library --no-deps
 ```
 
@@ -71,6 +70,12 @@ add the environment kernel to jupyter
 python -m ipykernel install --user --name=penguin
 ```
 launch the jupyter and be sure that you are running with the penguin kernel
+If you have problems with widgets appearing in Jupyter notebook try downgrade Ipython version,
+for example: 
+
+```bash
+python pip install iPython==8.20.0
+```
 
 ## Getting started
 
