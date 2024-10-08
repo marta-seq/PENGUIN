@@ -42,6 +42,10 @@ def remove_outliers(img: np.array, up_limit=99, down_limit=1) -> np.array:
     The function modifies the image in-place and saturates pixel values based on the specified
     percentile limits per channel.
     """
+    # Check if the image has 3 dimensions (height, width, channels)
+    if len(img.shape) < 3:
+        # If not, add an extra dimension to make it a 3-channel image
+        img = np.expand_dims(img, axis=-1)
 
     imOutlier = img
     for i in range(img.shape[2]):
